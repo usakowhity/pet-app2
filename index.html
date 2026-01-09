@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Pet App</title>
+
+<!-- スタイル（必要に応じて style.css に分離可） -->
+<style>
+body {
+    font-family: sans-serif;
+    margin: 0;
+    background: #f7f7f7;
+}
+
+header {
+    background: #4caf50;
+    color: white;
+    padding: 10px;
+    text-align: center;
+}
+
+#main {
+    padding: 10px;
+}
+
+h2, h3 {
+    margin-top: 20px;
+}
+
+button {
+    padding: 8px 14px;
+    margin: 4px;
+    border: none;
+    border-radius: 6px;
+    background: #4caf50;
+    color: white;
+    font-size: 14px;
+}
+
+button:hover {
+    opacity: 0.8;
+}
+
+input, select {
+    width: 100%;
+    padding: 8px;
+    margin: 6px 0 12px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.form-group {
+    margin-bottom: 12px;
+}
+
+#petManager, #petEditor {
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.pet-list-item {
+    display: flex;
+    justify-content: space-between;
+    background: #eee;
+    padding: 8px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+}
+
+#pet-container {
+    width: 100%;
+    height: 300px;
+    background: #ddd;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+#petImage, #petVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+#log {
+    font-size: 12px;
+    color: #555;
+    margin-top: 10px;
+}
+</style>
+
+<!-- Mediapipe / Camera -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js"></script>
+
+</head>
+<body>
+
+<header>
+    <h1>AI ペットアプリ</h1>
+</header>
+
+<div id="main">
+
+    <!-- ペット選択 -->
+    <h2>ペットを選択</h2>
+    <select id="petSelect"></select>
+
+    <!-- ペット表示領域 -->
+    <div id="pet-container">
+        <img id="petImage" style="display:none;">
+        <video id="petVideo" style="display:none;" playsinline muted></video>
+    </div>
+
+    <div id="log"></div>
+
+    <!-- ペット管理 -->
+    <h2>ペット管理</h2>
+    <div id="petManager">
+        <button id="addPetBtn">ペットを追加</button>
+        <div id="petList"></div>
+    </div>
+
+    <!-- ペット編集画面 -->
+    <div id="petEditor" style="display:none;">
+        <h3>ペット編集</h3>
+
+        <div class="form-group">
+            <label>名前</label>
+            <input id="editName" type="text">
+        </div>
+
+        <div class="form-group">
+            <label>種類</label>
+            <select id="editSpecies">
+                <option value="rabbit">ウサギ</option>
+                <option value="dog">犬</option>
+                <option value="cat">猫</option>
+            </select>
+        </div>
+
+        <h3>呼び名・声掛け設定</h3>
+
+        <div class="form-group">
+            <label>呼び名（名前呼び）</label>
+            <input id="editAlias" type="text" placeholder="例：ジロ">
+        </div>
+
+        <div class="form-group">
+            <label>声掛けキーワード（カンマ区切り）</label>
+            <input id="editKeywords" type="text" placeholder="例：いい子ね, グッド, 可愛いね">
+        </div>
+
+        <h3>画像（n1, n2, n3, p3, p4）</h3>
+        <input id="img_n1" type="file" accept="image/*">
+        <input id="img_n2" type="file" accept="image/*">
+        <input id="img_n3" type="file" accept="image/*">
+        <input id="img_p3" type="file" accept="image/*">
+        <input id="img_p4" type="file" accept="image/*">
+
+        <h3>動画（p1, p2, p5, p6, p7）</h3>
+        <input id="vid_p1" type="file" accept="video/*">
+        <input id="vid_p2" type="file" accept="video/*">
+        <input id="vid_p5" type="file" accept="video/*">
+        <input id="vid_p6" type="file" accept="video/*">
+        <input id="vid_p7" type="file" accept="video/*">
+
+        <button id="savePetBtn">保存</button>
+        <button id="cancelEditBtn" style="background:#aaa;">キャンセル</button>
+    </div>
+
+</div>
+
+<!-- メインスクリプト -->
+<script src="script.js"></script>
+
+</body>
+</html>
