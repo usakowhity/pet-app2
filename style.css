@@ -58,12 +58,10 @@ button:hover {
     opacity: 0.85;
 }
 
-/* 削除ボタン */
 button.delete {
     background: #ff8a80;
 }
 
-/* キャンセルボタン */
 button.cancel {
     background: #aaa;
 }
@@ -95,6 +93,23 @@ select {
     padding: 10px;
     border-radius: 8px;
     margin-bottom: 8px;
+}
+
+/* ============================
+   ペット選択 UI（アイコン表示）
+============================ */
+#petSelect {
+    padding-left: 40px; /* アイコン分の余白 */
+    background-repeat: no-repeat;
+    background-position: 8px center;
+    background-size: 28px 28px;
+}
+
+/* 選択欄の説明文 */
+#petDescription {
+    margin-top: 6px;
+    font-size: 14px;
+    color: #555;
 }
 
 /* ============================

@@ -1,5 +1,5 @@
 // ======================================================
-//  ペット管理データ（localStorage）
+//  ローカル保存データ
 // ======================================================
 let userPets = JSON.parse(localStorage.getItem("userPets") || "[]");
 let currentPreset = null;
@@ -8,6 +8,51 @@ let editingIndex = -1;
 function saveUserPets() {
     localStorage.setItem("userPets", JSON.stringify(userPets));
 }
+
+// ======================================================
+//  初回起動時：プリセットを自動登録
+// ======================================================
+function loadDefaultPresets() {
+    if (localStorage.getItem("presetsLoaded")) return;
+
+    const presets = [
+        { name: "Usako", species: "rabbit", folder: "usako", desc: "白ネザーランドドワーフ" },
+        { name: "Kuro", species: "rabbit", folder: "kuro", desc: "黒ネザーランドドワーフ" },
+        { name: "Taro", species: "dog", folder: "taro", desc: "白パピヨン子犬" },
+        { name: "Marple", species: "dog", folder: "marple", desc: "白トイプードル" },
+        { name: "Pochi", species: "dog", folder: "pochi", desc: "柴犬子犬" },
+        { name: "Tama", species: "cat", folder: "tama", desc: "薄茶白胸猫" }
+    ];
+
+    presets.forEach(p => {
+        userPets.push({
+            name: p.name,
+            species: p.species,
+            alias: "",
+            keywords: [],
+            description: p.desc,
+            images: {
+                n1: `assets/${p.folder}/n1.png`,
+                n2: `assets/${p.folder}/n2.png`,
+                n3: `assets/${p.folder}/n3.png`,
+                p3: `assets/${p.folder}/p3.png`,
+                p4: `assets/${p.folder}/p4.png`
+            },
+            videos: {
+                p1: `assets/${p.folder}/p1.png`,
+                p2: `assets/${p.folder}/p2.png`,
+                p5: `assets/${p.folder}/p5.png`,
+                p6: `assets/${p.folder}/p6.png`,
+                p7: `assets/${p.folder}/p7.png`
+            }
+        });
+    });
+
+    saveUserPets();
+    localStorage.setItem("presetsLoaded", "1");
+}
+
+loadDefaultPresets();
 
 // ======================================================
 //  ペット一覧の描画
@@ -134,17 +179,8 @@ document.getElementById("savePetBtn").onclick = () => {
 
     updatePetSelector();
 };
-
 // ======================================================
-//  ペット編集開始
-// ======================================================
-function editPet(index) {
-    editingIndex = index;
-    openEditor(userPets[index]);
-}
-
-// ======================================================
-//  ペット選択 UI
+//  ペット選択 UI（アイコン＋説明文）
 // ======================================================
 function updatePetSelector() {
     const select = document.getElementById("petSelect");
@@ -154,18 +190,34 @@ function updatePetSelector() {
         const opt = document.createElement("option");
         opt.value = index;
         opt.textContent = pet.name;
+
+        // アイコン（n1.png）を option に付与
+        opt.dataset.icon = pet.images?.n1 || "assets/common/placeholder.png";
+
         select.appendChild(opt);
     });
 
     select.onchange = () => {
         currentPreset = userPets[select.value];
         showStateMedia("n1");
+        showPetDescription();
     };
 
     if (userPets.length > 0) {
         currentPreset = userPets[0];
         showStateMedia("n1");
+        showPetDescription();
     }
+}
+
+// 説明文表示
+function showPetDescription() {
+    const box = document.getElementById("petDescription");
+    if (!currentPreset) {
+        box.textContent = "";
+        return;
+    }
+    box.textContent = currentPreset.description || "";
 }
 
 renderPetList();
@@ -175,6 +227,7 @@ updatePetSelector();
 // ======================================================
 //  Whisper（音声認識）
 // ======================================================
+
 let lastInteractionTime = Date.now();
 let p2_until = 0;
 let p3_until = 0;
@@ -220,19 +273,21 @@ function handleVoiceCommand(text) {
 
 
 // ======================================================
-//  FaceDetection（顔の有無・距離・手振り）
+//  FaceDetection（距離・手振り）
 // ======================================================
+
 let faceDetector;
 let detectCamera;
 let lastFaceVisible = true;
 
 async function initFaceDetection() {
     faceDetector = new FaceDetection.FaceDetection({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`
+        locateFile: (file) =>
+            `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`
     });
 
     faceDetector.setOptions({
-        model: 'short',
+        model: "short",
         minDetectionConfidence: 0.6
     });
 
@@ -253,6 +308,7 @@ async function initFaceDetection() {
     detectCamera.start();
 }
 
+// 手振り判定（顔が消えた瞬間）
 function detectHandWave(results) {
     const faceVisible = results.detections && results.detections.length > 0;
 
@@ -265,6 +321,7 @@ function detectHandWave(results) {
     lastFaceVisible = faceVisible;
 }
 
+// 顔の距離判定（近づいたら p2）
 function onFaceDetect(results) {
     detectHandWave(results);
 
@@ -277,21 +334,22 @@ function onFaceDetect(results) {
     const box = results.detections[0].boundingBox;
     const faceSize = box.width * box.height;
 
+    // 顔が大きく映ったら（近い）
     if (faceSize > 0.15) {
         p2_until = now + 1.0;
     }
 }
 
 initFaceDetection();
-
-
 // ======================================================
-//  FaceMesh（笑顔・視線）
+//  FaceMesh（表情・視線）
 // ======================================================
+
 let faceMesh = null;
 let smileCamera = null;
 let meshFrame = 0;
 
+// 笑顔判定
 function isSmile(landmarks) {
     const left = landmarks[61];
     const right = landmarks[291];
@@ -304,6 +362,7 @@ function isSmile(landmarks) {
     return width / height > 3.0;
 }
 
+// 視線判定（目がこちらを向いている）
 function isEyeContact(landmarks) {
     const leftEye = landmarks[468];
     const rightEye = landmarks[473];
@@ -314,7 +373,8 @@ function isEyeContact(landmarks) {
 
 async function initFaceMesh() {
     faceMesh = new FaceMesh({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+        locateFile: (file) =>
+            `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
     });
 
     faceMesh.setOptions({
@@ -351,11 +411,13 @@ function onSmileResults(results) {
 
     const landmarks = results.multiFaceLandmarks[0];
 
+    // 笑顔 → p2
     if (isSmile(landmarks)) {
         p2_until = now + 2.0;
         lastInteractionTime = Date.now();
     }
 
+    // 視線（目が合う）→ p2
     if (isEyeContact(landmarks)) {
         p2_until = now + 1.5;
         lastInteractionTime = Date.now();
@@ -368,6 +430,7 @@ initFaceMesh();
 // ======================================================
 //  撫でる（タッチ操作）
 // ======================================================
+
 let touchStartX = 0;
 let touchStartY = 0;
 
@@ -384,6 +447,7 @@ petContainer.addEventListener("touchmove", (e) => {
     const dx = Math.abs(t.clientX - touchStartX);
     const dy = Math.abs(t.clientY - touchStartY);
 
+    // 指が動いたら「撫でた」と判定
     if (dx + dy > 20) {
         const now = Date.now() / 1000;
         p2_until = now + 2.0;
@@ -393,33 +457,34 @@ petContainer.addEventListener("touchmove", (e) => {
 
 
 // ======================================================
-//  鳴き声（犬/猫/ウサギ）
+//  鳴き声（species に応じて）
 // ======================================================
+
 const soundMap = {
     dog: new Audio("assets/sounds/bark_dog.mp3"),
     cat: new Audio("assets/sounds/bark_cat.mp3"),
     rabbit: new Audio("assets/sounds/bark_rabbit.mp3")
 };
-
-
 // ======================================================
 //  状態遷移ロジック
 // ======================================================
 function determineState() {
     const now = Date.now() / 1000;
 
-    if (now < p5_until) return "p5";
-    if (now < p6_until) return "p6";
-    if (now < p7_until) return "p7";
-    if (now < p2_until) return "p2";
-    if (now < p3_until) return "p3";
-    if (now < p4_until) return "p4";
-    if (now < n2_until) return "n2";
-    if (now < n3_until) return "n3";
+    // 優先度の高い順に判定
+    if (now < p5_until) return "p5"; // 食事
+    if (now < p6_until) return "p6"; // 給水
+    if (now < p7_until) return "p7"; // トイレ
+    if (now < p2_until) return "p2"; // 喜び・甘え
+    if (now < p3_until) return "p3"; // 伏せ
+    if (now < p4_until) return "p4"; // お手
+    if (now < n2_until) return "n2"; // 待て
+    if (now < n3_until) return "n3"; // 睡眠
 
+    // 30秒以上ユーザーが離れたら睡眠
     if (Date.now() - lastInteractionTime > 30000) return "n3";
 
-    return "n1";
+    return "n1"; // 通常
 }
 
 
@@ -435,10 +500,12 @@ function showStateMedia(state) {
     const videoSrc = currentPreset.videos?.[state];
     const imageSrc = currentPreset.images?.[state];
 
+    // 動画を一旦停止
     petVideo.pause();
     petVideo.removeAttribute("src");
     petVideo.load();
 
+    // 動画がある場合
     if (videoSrc) {
         petImage.style.display = "none";
         petVideo.style.display = "block";
@@ -450,13 +517,17 @@ function showStateMedia(state) {
 
         petVideo.play().catch(err => console.log("動画再生エラー:", err));
 
+    // 画像がある場合
     } else if (imageSrc) {
         petVideo.style.display = "none";
         petImage.style.display = "block";
         petImage.src = imageSrc;
+
+    // どちらもない場合（プレースホルダー）
     } else {
         petVideo.style.display = "none";
-        petImage.style.display = "none";
+        petImage.style.display = "block";
+        petImage.src = "assets/common/placeholder.png";
     }
 }
 
@@ -469,9 +540,11 @@ let lastState = null;
 function mainLoop() {
     const state = determineState();
 
+    // 状態が変わったときだけメディア更新
     if (state !== lastState) {
         showStateMedia(state);
 
+        // p2 のときだけ鳴き声を再生
         if (state === "p2" && currentPreset) {
             const sp = currentPreset.species;
             if (soundMap[sp]) {
@@ -482,6 +555,7 @@ function mainLoop() {
 
         lastState = state;
 
+        // ログ表示（デバッグ用）
         const log = document.getElementById("log");
         if (log) {
             log.textContent = `[${new Date().toLocaleTimeString()}] state = ${state}`;

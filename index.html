@@ -5,92 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Pet App</title>
 
-<!-- スタイル（必要に応じて style.css に分離可） -->
-<style>
-body {
-    font-family: sans-serif;
-    margin: 0;
-    background: #f7f7f7;
-}
-
-header {
-    background: #4caf50;
-    color: white;
-    padding: 10px;
-    text-align: center;
-}
-
-#main {
-    padding: 10px;
-}
-
-h2, h3 {
-    margin-top: 20px;
-}
-
-button {
-    padding: 8px 14px;
-    margin: 4px;
-    border: none;
-    border-radius: 6px;
-    background: #4caf50;
-    color: white;
-    font-size: 14px;
-}
-
-button:hover {
-    opacity: 0.8;
-}
-
-input, select {
-    width: 100%;
-    padding: 8px;
-    margin: 6px 0 12px 0;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-}
-
-.form-group {
-    margin-bottom: 12px;
-}
-
-#petManager, #petEditor {
-    background: white;
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-}
-
-.pet-list-item {
-    display: flex;
-    justify-content: space-between;
-    background: #eee;
-    padding: 8px;
-    border-radius: 6px;
-    margin-bottom: 6px;
-}
-
-#pet-container {
-    width: 100%;
-    height: 300px;
-    background: #ddd;
-    border-radius: 10px;
-    position: relative;
-    overflow: hidden;
-}
-
-#petImage, #petVideo {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-#log {
-    font-size: 12px;
-    color: #555;
-    margin-top: 10px;
-}
-</style>
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
 
 <!-- Mediapipe / Camera -->
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
@@ -109,6 +25,9 @@ input, select {
     <!-- ペット選択 -->
     <h2>ペットを選択</h2>
     <select id="petSelect"></select>
+
+    <!-- 説明文表示 -->
+    <div id="petDescription"></div>
 
     <!-- ペット表示領域 -->
     <div id="pet-container">
@@ -170,12 +89,11 @@ input, select {
         <input id="vid_p7" type="file" accept="video/*">
 
         <button id="savePetBtn">保存</button>
-        <button id="cancelEditBtn" style="background:#aaa;">キャンセル</button>
+        <button id="cancelEditBtn" class="cancel">キャンセル</button>
     </div>
 
 </div>
 
-<!-- メインスクリプト -->
 <script src="script.js"></script>
 
 </body>
