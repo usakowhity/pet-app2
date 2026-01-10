@@ -96,16 +96,53 @@ select {
 }
 
 /* ============================
-   ペット選択 UI（アイコン表示）
+   ペット選択 UI（カード表示）
 ============================ */
-#petSelect {
-    padding-left: 40px; /* アイコン分の余白 */
-    background-repeat: no-repeat;
-    background-position: 8px center;
-    background-size: 28px 28px;
+.pet-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
 }
 
-/* 選択欄の説明文 */
+.pet-card {
+    width: 100px;
+    padding: 6px;
+    border-radius: 10px;
+    border: 2px solid #ccc;
+    background: #fff;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, border-color 0.1s ease;
+}
+
+.pet-card.selected {
+    border-color: #4caf50;
+    box-shadow: 0 0 6px rgba(76, 175, 80, 0.6);
+    transform: translateY(-2px);
+}
+
+.pet-card-thumb {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 4px;
+}
+
+.pet-card-name {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.pet-card-species {
+    font-size: 12px;
+    color: #666;
+}
+
+/* ============================
+   ペット説明文
+============================ */
 #petDescription {
     margin-top: 6px;
     font-size: 14px;
@@ -132,5 +169,14 @@ select {
     button {
         font-size: 14px;
         padding: 8px 12px;
+    }
+
+    .pet-card {
+        width: 90px;
+    }
+
+    .pet-card-thumb {
+        width: 70px;
+        height: 70px;
     }
 }
