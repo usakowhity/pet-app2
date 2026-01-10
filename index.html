@@ -8,10 +8,10 @@
 <link rel="stylesheet" href="style.css">
 <link rel="manifest" href="manifest.json">
 
-<!-- Mediapipe / Camera -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+<!-- Mediapipe / Camera（★バージョン固定） -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.4.1646424915/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4.1646424915/face_detection.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js"></script>
 
 </head>
 <body>
@@ -22,29 +22,24 @@
 
 <div id="main">
 
-    <!-- ペット選択（カードUI） -->
     <h2>ペットを選択</h2>
     <div id="petCards" class="pet-cards"></div>
 
-    <!-- 説明文表示 -->
     <div id="petDescription"></div>
 
-    <!-- ペット表示領域 -->
     <div id="pet-container">
         <img id="petImage" style="display:none;">
-        <video id="petVideo" style="display:none;" playsinline muted></video>
+        <video id="petVideo" style="display:none;" playsinline muted autoplay></video>
     </div>
 
     <div id="log"></div>
 
-    <!-- ペット管理 -->
     <h2>ペット管理</h2>
     <div id="petManager">
         <button id="addPetBtn">ペットを追加</button>
         <div id="petList"></div>
     </div>
 
-    <!-- ペット編集画面 -->
     <div id="petEditor" style="display:none;">
         <h3>ペット編集</h3>
 
@@ -74,38 +69,36 @@
             <input id="editKeywords" type="text">
         </div>
 
-        <!-- 画像（静止画） -->
         <h3 id="imgHeader">画像（静止画）</h3>
-        <label id="lbl_n1">通常の姿（n1）</label>
+        <label>通常の姿（n1）</label>
         <input id="img_n1" type="file" accept="image/*">
 
-        <label id="lbl_n2">待っている姿（n2）</label>
+        <label>待っている姿（n2）</label>
         <input id="img_n2" type="file" accept="image/*">
 
-        <label id="lbl_n3">寝ている姿（n3）</label>
+        <label>寝ている姿（n3）</label>
         <input id="img_n3" type="file" accept="image/*">
 
-        <label id="lbl_p3">伏せの姿（p3）</label>
+        <label>伏せの姿（p3）</label>
         <input id="img_p3" type="file" accept="image/*">
 
-        <label id="lbl_p4">お手の姿（p4）</label>
+        <label>お手の姿（p4）</label>
         <input id="img_p4" type="file" accept="image/*">
 
-        <!-- 動画（動きのある姿） -->
         <h3 id="vidHeader">動画（動きのある姿）</h3>
-        <label id="lbl_p1">一人遊び・散歩（p1）</label>
+        <label>一人遊び・散歩（p1）</label>
         <input id="vid_p1" type="file" accept="video/*">
 
-        <label id="lbl_p2">呼ばれた時の反応 / 喜び（p2）</label>
+        <label>呼ばれた時の反応 / 喜び（p2）</label>
         <input id="vid_p2" type="file" accept="video/*">
 
-        <label id="lbl_p5">ごはんを食べる（p5）</label>
+        <label>ごはんを食べる（p5）</label>
         <input id="vid_p5" type="file" accept="video/*">
 
-        <label id="lbl_p6">水を飲む（p6）</label>
+        <label>水を飲む（p6）</label>
         <input id="vid_p6" type="file" accept="video/*">
 
-        <label id="lbl_p7">トイレの様子（p7）</label>
+        <label>トイレの様子（p7）</label>
         <input id="vid_p7" type="file" accept="video/*">
 
         <button id="savePetBtn">保存</button>
@@ -114,7 +107,6 @@
 
 </div>
 
-<!-- script.js は必ず body の最後 -->
 <script src="script.js"></script>
 
 </body>
