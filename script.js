@@ -19,6 +19,19 @@ const soundMap = {
 };
 
 // ======================================================
+//  Whisper / 状態遷移フラグ（★最上部に移動済み）
+// ======================================================
+let lastInteractionTime = Date.now();
+let p2_until = 0;  // 喜び
+let p3_until = 0;  // 伏せ
+let p4_until = 0;  // お手
+let p5_until = 0;  // 食事
+let p6_until = 0;  // 給水
+let p7_until = 0;  // トイレ
+let n2_until = 0;  // お座り / 待て
+let n3_until = 0;  // 睡眠
+
+// ======================================================
 //  初回起動時：プリセットを自動登録（assets に完全一致）
 // ======================================================
 function loadDefaultPresets() {
@@ -106,118 +119,6 @@ function loadDefaultPresets() {
 }
 
 loadDefaultPresets();
-
-// ======================================================
-//  ペット管理リスト（プリセットは編集不可）
-// ======================================================
-function renderPetList() {
-    const list = document.getElementById("petList");
-    if (!list) return;
-    list.innerHTML = "";
-
-    userPets.forEach((pet, index) => {
-        const div = document.createElement("div");
-        div.className = "pet-list-item";
-
-        const label = document.createElement("span");
-        label.textContent = `${pet.name}（${pet.species}）`;
-
-        const btnBox = document.createElement("div");
-
-        // プリセットは編集不可
-        if (!pet.isPreset) {
-            const editBtn = document.createElement("button");
-            editBtn.textContent = "編集";
-            editBtn.onclick = () => editPet(index);
-
-            const delBtn = document.createElement("button");
-            delBtn.textContent = "削除";
-            delBtn.classList.add("delete");
-            delBtn.onclick = () => {
-                if (confirm("このペットを削除しますか？")) {
-                    userPets.splice(index, 1);
-                    saveUserPets();
-                    renderPetList();
-                    renderPetCards();
-                }
-            };
-
-            btnBox.appendChild(editBtn);
-            btnBox.appendChild(delBtn);
-        }
-
-        div.appendChild(label);
-        div.appendChild(btnBox);
-        list.appendChild(div);
-    });
-}
-
-// ======================================================
-//  ペット追加ボタン（ユーザー追加のみ）
-// ======================================================
-const addPetBtn = document.getElementById("addPetBtn");
-if (addPetBtn) {
-    addPetBtn.onclick = () => {
-        editingIndex = -1;
-        openEditor();
-    };
-}
-
-// ======================================================
-//  ペット編集画面の開閉（プリセットは呼び名・キーワードのみ）
-// ======================================================
-function openEditor(pet = null) {
-    document.getElementById("petManager").style.display = "none";
-    document.getElementById("petEditor").style.display = "block";
-
-    if (pet) {
-        document.getElementById("editName").value = pet.name;
-        document.getElementById("editSpecies").value = pet.species;
-        document.getElementById("editAlias").value = pet.alias || "";
-        document.getElementById("editKeywords").value = (pet.keywords || []).join(", ");
-    } else {
-        document.getElementById("editName").value = "";
-        document.getElementById("editSpecies").value = "rabbit";
-        document.getElementById("editAlias").value = "";
-        document.getElementById("editKeywords").value = "";
-    }
-
-    // プリセットは画像/動画編集不可
-    const isPreset = pet?.isPreset;
-    const fileInputs = [
-        "img_n1","img_n2","img_n3","img_p3","img_p4",
-        "vid_p1","vid_p2","vid_p5","vid_p6","vid_p7"
-    ];
-
-    fileInputs.forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.value = "";
-        el.style.display = isPreset ? "none" : "block";
-    });
-}
-
-const cancelEditBtn = document.getElementById("cancelEditBtn");
-if (cancelEditBtn) {
-    cancelEditBtn.onclick = () => {
-        document.getElementById("petEditor").style.display = "none";
-        document.getElementById("petManager").style.display = "block";
-    };
-}
-
-// 編集開始
-function editPet(index) {
-    editingIndex = index;
-    openEditor(userPets[index]);
-}
-
-// ======================================================
-//  ファイル → blob URL（ユーザー追加用）
-// ======================================================
-function fileToBlobURL(fileInput) {
-    if (!fileInput || !fileInput.files || fileInput.files.length === 0) return null;
-    return URL.createObjectURL(fileInput.files[0]);
-}
 // ======================================================
 //  サムネイル生成（安定版：動画でもそのまま表示）
 // ======================================================
@@ -337,17 +238,8 @@ function showPetDescription() {
 renderPetList();
 renderPetCards();
 // ======================================================
-//  Whisper（音声認識）用の状態フラグ
+//  Whisper（音声認識）用の状態フラグは第1部に移動済み
 // ======================================================
-let lastInteractionTime = Date.now();
-let p2_until = 0;  // 喜び
-let p3_until = 0;  // 伏せ
-let p4_until = 0;  // お手
-let p5_until = 0;  // 食事
-let p6_until = 0;  // 給水
-let p7_until = 0;  // トイレ
-let n2_until = 0;  // お座り / 待て
-let n3_until = 0;  // 睡眠
 
 
 // ======================================================
@@ -395,6 +287,7 @@ function handleVoiceCommand(text) {
         return;
     }
 }
+
 
 
 // ======================================================
@@ -465,6 +358,7 @@ function onFaceDetect(results) {
 }
 
 initFaceDetection();
+
 
 
 // ======================================================
