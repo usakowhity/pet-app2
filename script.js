@@ -31,19 +31,20 @@ function loadDefaultPresets() {
             alias: "",
             keywords: [],
             description: p.desc,
+            isPreset: true,   // ★プリセット識別
 
             images: {
-                n1: `assets/${p.folder}/n1.png`,
-                n2: `assets/${p.folder}/n2.png`,
-                n3: `assets/${p.folder}/n3.png`,
+                n1: `assets/${p.folder}/n1.${p.folder === "kuro" ? "mp4" : "png"}`,
+                n2: `assets/${p.folder}/n2.${p.folder === "kuro" ? "mp4" : "png"}`,
+                n3: `assets/${p.folder}/n3.${p.folder === "usako" ? "mp4" : "png"}`,
                 p3: `assets/${p.folder}/p3.png`,
                 p4: `assets/${p.folder}/p4.png`
             },
 
             videos: {
-                p1: `assets/${p.folder}/p1.png`,
-                p2: `assets/${p.folder}/p2.png`,
-                p5: `assets/${p.folder}/p5.png`,
+                p1: `assets/${p.folder}/p1.${p.folder === "taro" || p.folder === "marple" || p.folder === "pochi" || p.folder === "tama" ? "png" : "mp4"}`,
+                p2: `assets/${p.folder}/p2.${p.folder === "taro" || p.folder === "marple" || p.folder === "pochi" || p.folder === "tama" ? "png" : "mp4"}`,
+                p5: `assets/${p.folder}/p5.${p.folder === "taro" || p.folder === "marple" || p.folder === "pochi" || p.folder === "tama" ? "png" : "mp4"}`,
                 p6: `assets/${p.folder}/p6.png`,
                 p7: `assets/${p.folder}/p7.png`
             }
@@ -53,8 +54,6 @@ function loadDefaultPresets() {
     saveUserPets();
     localStorage.setItem("presetsLoaded", "1");
 }
-
-loadDefaultPresets();
 
 // ======================================================
 //  ペット管理リスト
