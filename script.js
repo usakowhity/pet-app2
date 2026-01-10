@@ -365,10 +365,10 @@ let detectCamera;
 let lastFaceVisible = true;
 
 async function initFaceDetection() {
-    faceDetector = new faceDetection.FaceDetection({
-        locateFile: (file) =>
-            `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`
-    });
+faceDetector = new faceDetection.FaceDetection({
+    locateFile: (file) =>
+        `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4.1646424915/${file}`
+});
 
     faceDetector.setOptions({
         model: "short",
@@ -451,11 +451,10 @@ function isEyeContact(landmarks) {
 }
 
 async function initFaceMesh() {
-    faceMesh = new FaceMesh({
-        locateFile: (file) =>
-            `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-    });
-
+faceMesh = new FaceMesh({
+    locateFile: (file) =>
+        `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${file}`
+});
     faceMesh.setOptions({
         maxNumFaces: 1,
         refineLandmarks: true,
