@@ -119,21 +119,126 @@ function loadDefaultPresets() {
 }
 
 loadDefaultPresets();
+
 // ======================================================
-//  サムネイル生成（安定版：動画でもそのまま表示）
+//  ペット管理リスト（プリセットは編集不可）
+// ======================================================
+function renderPetList() {
+    const list = document.getElementById("petList");
+    if (!list) return;
+    list.innerHTML = "";
+
+    userPets.forEach((pet, index) => {
+        const div = document.createElement("div");
+        div.className = "pet-list-item";
+
+        const label = document.createElement("span");
+        label.textContent = `${pet.name}（${pet.species}）`;
+
+        const btnBox = document.createElement("div");
+
+        if (!pet.isPreset) {
+            const editBtn = document.createElement("button");
+            editBtn.textContent = "編集";
+            editBtn.onclick = () => editPet(index);
+
+            const delBtn = document.createElement("button");
+            delBtn.textContent = "削除";
+            delBtn.classList.add("delete");
+            delBtn.onclick = () => {
+                if (confirm("このペットを削除しますか？")) {
+                    userPets.splice(index, 1);
+                    saveUserPets();
+                    renderPetList();
+                    renderPetCards();
+                }
+            };
+
+            btnBox.appendChild(editBtn);
+            btnBox.appendChild(delBtn);
+        }
+
+        div.appendChild(label);
+        div.appendChild(btnBox);
+        list.appendChild(div);
+    });
+}
+
+// ======================================================
+//  ペット追加ボタン
+// ======================================================
+const addPetBtn = document.getElementById("addPetBtn");
+if (addPetBtn) {
+    addPetBtn.onclick = () => {
+        editingIndex = -1;
+        openEditor();
+    };
+}
+
+// ======================================================
+//  ペット編集画面
+// ======================================================
+function openEditor(pet = null) {
+    document.getElementById("petManager").style.display = "none";
+    document.getElementById("petEditor").style.display = "block";
+
+    if (pet) {
+        document.getElementById("editName").value = pet.name;
+        document.getElementById("editSpecies").value = pet.species;
+        document.getElementById("editAlias").value = pet.alias || "";
+        document.getElementById("editKeywords").value = (pet.keywords || []).join(", ");
+    } else {
+        document.getElementById("editName").value = "";
+        document.getElementById("editSpecies").value = "rabbit";
+        document.getElementById("editAlias").value = "";
+        document.getElementById("editKeywords").value = "";
+    }
+
+    const isPreset = pet?.isPreset;
+    const fileInputs = [
+        "img_n1","img_n2","img_n3","img_p3","img_p4",
+        "vid_p1","vid_p2","vid_p5","vid_p6","vid_p7"
+    ];
+
+    fileInputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.value = "";
+        el.style.display = isPreset ? "none" : "block";
+    });
+}
+
+const cancelEditBtn = document.getElementById("cancelEditBtn");
+if (cancelEditBtn) {
+    cancelEditBtn.onclick = () => {
+        document.getElementById("petEditor").style.display = "none";
+        document.getElementById("petManager").style.display = "block";
+    };
+}
+
+function editPet(index) {
+    editingIndex = index;
+    openEditor(userPets[index]);
+}
+
+// ======================================================
+//  ファイル → blob URL
+// ======================================================
+function fileToBlobURL(fileInput) {
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) return null;
+    return URL.createObjectURL(fileInput.files[0]);
+}
+
+// ======================================================
+//  サムネイル生成
 // ======================================================
 async function generateThumbnail(src) {
-    if (!src) {
-        // プレースホルダ（存在する画像に変更）
-        return "assets/usako/n1.png";
-    }
-    // 動画でも画像でも、そのまま <img> に表示
+    if (!src) return "assets/usako/n1.png";
     return src;
 }
 
-
 // ======================================================
-//  ペット選択 UI（カード表示）
+//  ペットカード UI
 // ======================================================
 const petCardsContainer = document.getElementById("petCards");
 const petDescriptionBox = document.getElementById("petDescription");
@@ -153,7 +258,6 @@ async function renderPetCards() {
         const thumb = document.createElement("img");
         thumb.className = "pet-card-thumb";
 
-        // n1 → なければ p1 → それもなければ placeholder
         const n1src =
             pet.images?.n1 ||
             pet.videos?.n1 ||
@@ -175,27 +279,20 @@ async function renderPetCards() {
         card.appendChild(nameEl);
         card.appendChild(speciesEl);
 
-        card.onclick = () => {
-            selectPetByIndex(index);
-        };
+        card.onclick = () => selectPetByIndex(index);
 
         petCardsContainer.appendChild(card);
     }
 
-    // ★ 初期選択（プリセットを選んだ瞬間に動く）
-    if (userPets.length > 0) {
-        selectPetByIndex(0);
-    }
+    if (userPets.length > 0) selectPetByIndex(0);
 }
 
-
 // ======================================================
-//  ペット選択時の処理（プリセット即動作）
+//  ペット選択
 // ======================================================
 function selectPetByIndex(index) {
     currentPreset = userPets[index];
 
-    // カードの選択状態更新
     const cards = petCardsContainer.querySelectorAll(".pet-card");
     cards.forEach(card => {
         card.classList.toggle(
@@ -204,91 +301,61 @@ function selectPetByIndex(index) {
         );
     });
 
-    // ★ 選んだ瞬間に通常状態を表示
     showStateMedia("n1");
-
-    // 説明文表示
     showPetDescription();
 
-    // ★ 状態遷移を確実に開始
     lastInteractionTime = Date.now();
 
-    // ★ 選んだ瞬間に軽く喜ぶ（自然な反応）
     const now = Date.now() / 1000;
     p2_until = now + 1.5;
 }
 
-
 // ======================================================
-//  説明文表示
+//  説明文
 // ======================================================
 function showPetDescription() {
     if (!petDescriptionBox) return;
-    if (!currentPreset) {
-        petDescriptionBox.textContent = "";
-        return;
-    }
-    petDescriptionBox.textContent = currentPreset.description || "";
+    petDescriptionBox.textContent = currentPreset?.description || "";
 }
-
 
 // ======================================================
 //  初期描画
 // ======================================================
 renderPetList();
 renderPetCards();
-// ======================================================
-//  Whisper（音声認識）用の状態フラグは第1部に移動済み
-// ======================================================
-
 
 // ======================================================
-//  音声コマンド処理（Whisper）
+//  Whisper（音声コマンド）
 // ======================================================
 function handleVoiceCommand(text) {
     const now = Date.now() / 1000;
     lastInteractionTime = Date.now();
 
-    // 固定キーワード（喜び）
     const fixed = ["かわいい", "可愛い", "よしよし", "おりこう", "いい子"];
-    if (fixed.some(w => text.includes(w))) {
-        p2_until = now + 3;
-        return;
-    }
+    if (fixed.some(w => text.includes(w))) { p2_until = now + 3; return; }
 
-    // ユーザー定義キーワード
     if (currentPreset?.keywords?.some(w => text.includes(w))) {
-        p2_until = now + 3;
-        return;
+        p2_until = now + 3; return;
     }
 
-    // 呼び名（alias）
     if (currentPreset?.alias && text.includes(currentPreset.alias)) {
-        p2_until = now + 2;
-        return;
+        p2_until = now + 2; return;
     }
 
-    // コマンド
     if (["ごはん", "ご飯"].some(w => text.includes(w))) { p5_until = now + 5; return; }
     if (["水", "お水"].some(w => text.includes(w))) { p6_until = now + 4; return; }
     if (["トイレ"].some(w => text.includes(w))) { p7_until = now + 4; return; }
     if (["伏せ"].some(w => text.includes(w))) { p3_until = now + 3; return; }
     if (["お手"].some(w => text.includes(w))) { p4_until = now + 3; return; }
 
-    // お座り / 待て
     if (["お座り", "待て", "ストップ"].some(w => text.includes(w))) {
-        n2_until = now + 5;
-        return;
+        n2_until = now + 5; return;
     }
 
-    // 睡眠
     if (["ねんね", "おやすみ"].some(w => text.includes(w))) {
-        n3_until = now + 9999;
-        return;
+        n3_until = now + 9999; return;
     }
 }
-
-
 
 // ======================================================
 //  FaceDetection（距離・手振り）
@@ -298,7 +365,6 @@ let detectCamera;
 let lastFaceVisible = true;
 
 async function initFaceDetection() {
-    // ★ Mediapipe CDN は小文字の faceDetection 名前空間
     faceDetector = new faceDetection.FaceDetection({
         locateFile: (file) =>
             `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`
@@ -329,7 +395,6 @@ async function initFaceDetection() {
 function detectHandWave(results) {
     const faceVisible = results.detections && results.detections.length > 0;
 
-    // 顔が消えた瞬間 → 手を振ったと判定
     if (lastFaceVisible && !faceVisible) {
         const now = Date.now() / 1000;
         p2_until = now + 1.5;
@@ -351,15 +416,12 @@ function onFaceDetect(results) {
     const box = results.detections[0].boundingBox;
     const faceSize = box.width * box.height;
 
-    // 顔が近い → 喜び
     if (faceSize > 0.15) {
         p2_until = now + 1.0;
     }
 }
 
 initFaceDetection();
-
-
 
 // ======================================================
 //  FaceMesh（表情・視線）
@@ -368,7 +430,6 @@ let faceMesh = null;
 let smileCamera = null;
 let meshFrame = 0;
 
-// 笑顔判定
 function isSmile(landmarks) {
     const left = landmarks[61];
     const right = landmarks[291];
@@ -381,7 +442,6 @@ function isSmile(landmarks) {
     return width / height > 3.0;
 }
 
-// 視線判定（目が合う）
 function isEyeContact(landmarks) {
     const leftEye = landmarks[468];
     const rightEye = landmarks[473];
@@ -430,13 +490,11 @@ function onSmileResults(results) {
 
     const landmarks = results.multiFaceLandmarks[0];
 
-    // 笑顔 → 喜び（p2）
     if (isSmile(landmarks)) {
         p2_until = now + 2.0;
         lastInteractionTime = Date.now();
     }
 
-    // 視線が合う → 喜び（p2）
     if (isEyeContact(landmarks)) {
         p2_until = now + 1.5;
         lastInteractionTime = Date.now();
@@ -444,29 +502,26 @@ function onSmileResults(results) {
 }
 
 initFaceMesh();
+
 // ======================================================
 //  状態遷移ロジック
 // ======================================================
 function determineState() {
     const now = Date.now() / 1000;
 
-    // 優先度の高い順
-    if (now < p5_until) return "p5"; // 食事
-    if (now < p6_until) return "p6"; // 給水
-    if (now < p7_until) return "p7"; // トイレ
-    if (now < p2_until) return "p2"; // 喜び（呼ばれた時の反応）
-    if (now < p3_until) return "p3"; // 伏せ
-    if (now < p4_until) return "p4"; // お手
-    if (now < n2_until) return "n2"; // お座り / 待て
-    if (now < n3_until) return "n3"; // 睡眠
+    if (now < p5_until) return "p5";
+    if (now < p6_until) return "p6";
+    if (now < p7_until) return "p7";
+    if (now < p2_until) return "p2";
+    if (now < p3_until) return "p3";
+    if (now < p4_until) return "p4";
+    if (now < n2_until) return "n2";
+    if (now < n3_until) return "n3";
 
-    // 長時間無反応 → 睡眠
     if (Date.now() - lastInteractionTime > 30000) return "n3";
 
-    // 通常状態
     return "n1";
 }
-
 
 // ======================================================
 //  メディア表示（画像/動画）
@@ -480,12 +535,10 @@ function showStateMedia(state) {
     const videoSrc = currentPreset.videos?.[state];
     const imageSrc = currentPreset.images?.[state];
 
-    // 動画を一旦停止
     petVideo.pause();
     petVideo.removeAttribute("src");
     petVideo.load();
 
-    // ★ 動画がある場合
     if (videoSrc) {
         petImage.style.display = "none";
         petVideo.style.display = "block";
@@ -497,52 +550,14 @@ function showStateMedia(state) {
 
         petVideo.play().catch(err => console.log("動画再生エラー:", err));
 
-    // ★ 画像がある場合
     } else if (imageSrc) {
         petVideo.style.display = "none";
         petImage.style.display = "block";
         petImage.src = imageSrc;
 
-    // ★ どちらも無い場合（代替）
     } else {
         petVideo.style.display = "none";
         petImage.style.display = "block";
         petImage.src = "assets/usako/n1.png"; // プレースホルダ
     }
 }
-
-
-// ======================================================
-//  メインループ
-// ======================================================
-let lastState = null;
-
-function mainLoop() {
-    const state = determineState();
-
-    // 状態が変わったときだけメディア更新
-    if (state !== lastState) {
-        showStateMedia(state);
-
-        // ★ p2（喜び）のときだけ鳴き声
-        if (state === "p2" && currentPreset) {
-            const sp = currentPreset.species;
-            if (soundMap[sp]) {
-                soundMap[sp].currentTime = 0;
-                soundMap[sp].play().catch(() => {});
-            }
-        }
-
-        lastState = state;
-
-        // デバッグログ
-        const log = document.getElementById("log");
-        if (log) {
-            log.textContent = `[${new Date().toLocaleTimeString()}] state = ${state}`;
-        }
-    }
-
-    requestAnimationFrame(mainLoop);
-}
-
-mainLoop();
