@@ -10,44 +10,94 @@ function saveUserPets() {
 }
 
 // ======================================================
-//  初回起動時：プリセットを自動登録（assets パス版）
+//  鳴き声マップ（プリセット用）
+// ======================================================
+const soundMap = {
+    rabbit: new Audio("assets/sounds/bark_rabbit.mp3"),
+    dog: new Audio("assets/sounds/bark_dog.mp3"),
+    cat: new Audio("assets/sounds/bark_cat.mp3")
+};
+
+// ======================================================
+//  初回起動時：プリセットを自動登録（assets に完全一致）
 // ======================================================
 function loadDefaultPresets() {
     if (localStorage.getItem("presetsLoaded")) return;
 
     const presets = [
         { name: "Usako", species: "rabbit", folder: "usako", desc: "白ネザーランドドワーフ" },
-        { name: "Kuro", species: "rabbit", folder: "kuro", desc: "黒ネザーランドドワーフ" },
-        { name: "Taro", species: "dog", folder: "taro", desc: "白パピヨン子犬" },
-        { name: "Marple", species: "dog", folder: "marple", desc: "白トイプードル" },
-        { name: "Pochi", species: "dog", folder: "pochi", desc: "柴犬子犬" },
-        { name: "Tama", species: "cat", folder: "tama", desc: "薄茶白胸猫" }
+        { name: "Kuro",  species: "rabbit", folder: "kuro",  desc: "黒ネザーランドドワーフ" },
+        { name: "Taro",  species: "dog",    folder: "taro",  desc: "白パピヨン子犬" },
+        { name: "Marple",species: "dog",    folder: "marple",desc: "白トイプードル" },
+        { name: "Pochi", species: "dog",    folder: "pochi", desc: "柴犬子犬" },
+        { name: "Tama",  species: "cat",    folder: "tama",  desc: "薄茶白胸猫" }
     ];
 
     presets.forEach(p => {
+        let images = {};
+        let videos = {};
+
+        // 犬・猫（全部 PNG）
+        if (["taro","marple","pochi","tama"].includes(p.folder)) {
+            images = {
+                n1:`assets/${p.folder}/n1.png`,
+                n2:`assets/${p.folder}/n2.png`,
+                n3:`assets/${p.folder}/n3.png`,
+                p1:`assets/${p.folder}/p1.png`,
+                p2:`assets/${p.folder}/p2.png`,
+                p3:`assets/${p.folder}/p3.png`,
+                p4:`assets/${p.folder}/p4.png`,
+                p5:`assets/${p.folder}/p5.png`,
+                p6:`assets/${p.folder}/p6.png`,
+                p7:`assets/${p.folder}/p7.png`
+            };
+        }
+
+        // Usako（n3/p1/p2/p5 が mp4）
+        if (p.folder === "usako") {
+            images = {
+                n1:`assets/usako/n1.png`,
+                n2:`assets/usako/n2.png`,
+                p3:`assets/usako/p3.png`,
+                p4:`assets/usako/p4.png`,
+                p6:`assets/usako/p6.png`,
+                p7:`assets/usako/p7.png`
+            };
+            videos = {
+                n3:`assets/usako/n3.mp4`,
+                p1:`assets/usako/p1.mp4`,
+                p2:`assets/usako/p2.mp4`,
+                p5:`assets/usako/p5.mp4`
+            };
+        }
+
+        // Kuro（n1/n2/n3/p1/p2/p5 が mp4）
+        if (p.folder === "kuro") {
+            images = {
+                p3:`assets/kuro/p3.png`,
+                p4:`assets/kuro/p4.png`,
+                p6:`assets/kuro/p6.png`,
+                p7:`assets/kuro/p7.png`
+            };
+            videos = {
+                n1:`assets/kuro/n1.mp4`,
+                n2:`assets/kuro/n2.mp4`,
+                n3:`assets/kuro/n3.mp4`,
+                p1:`assets/kuro/p1.mp4`,
+                p2:`assets/kuro/p2.mp4`,
+                p5:`assets/kuro/p5.mp4`
+            };
+        }
+
         userPets.push({
             name: p.name,
             species: p.species,
             alias: "",
             keywords: [],
             description: p.desc,
-            isPreset: true,   // ★プリセット識別
-
-            images: {
-                n1: `assets/${p.folder}/n1.${p.folder === "kuro" ? "mp4" : "png"}`,
-                n2: `assets/${p.folder}/n2.${p.folder === "kuro" ? "mp4" : "png"}`,
-                n3: `assets/${p.folder}/n3.${p.folder === "usako" ? "mp4" : "png"}`,
-                p3: `assets/${p.folder}/p3.png`,
-                p4: `assets/${p.folder}/p4.png`
-            },
-
-            videos: {
-                p1: `assets/${p.folder}/p1.${p.folder === "taro" || p.folder === "marple" || p.folder === "pochi" || p.folder === "tama" ? "png" : "mp4"}`,
-                p2: `assets/${p.folder}/p2.${p.folder === "taro" || p.folder === "marple" || p.folder === "pochi" || p.folder === "tama" ? "png" : "mp4"}`,
-                p5: `assets/${p.folder}/p5.${p.folder === "taro" || p.folder === "marple" || p.folder === "pochi" || p.folder === "tama" ? "png" : "mp4"}`,
-                p6: `assets/${p.folder}/p6.png`,
-                p7: `assets/${p.folder}/p7.png`
-            }
+            isPreset: true,
+            images,
+            videos
         });
     });
 
@@ -55,8 +105,10 @@ function loadDefaultPresets() {
     localStorage.setItem("presetsLoaded", "1");
 }
 
+loadDefaultPresets();
+
 // ======================================================
-//  ペット管理リスト
+//  ペット管理リスト（プリセットは編集不可）
 // ======================================================
 function renderPetList() {
     const list = document.getElementById("petList");
@@ -72,24 +124,27 @@ function renderPetList() {
 
         const btnBox = document.createElement("div");
 
-        const editBtn = document.createElement("button");
-        editBtn.textContent = "編集";
-        editBtn.onclick = () => editPet(index);
+        // プリセットは編集不可
+        if (!pet.isPreset) {
+            const editBtn = document.createElement("button");
+            editBtn.textContent = "編集";
+            editBtn.onclick = () => editPet(index);
 
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "削除";
-        delBtn.classList.add("delete");
-        delBtn.onclick = () => {
-            if (confirm("このペットを削除しますか？")) {
-                userPets.splice(index, 1);
-                saveUserPets();
-                renderPetList();
-                renderPetCards();
-            }
-        };
+            const delBtn = document.createElement("button");
+            delBtn.textContent = "削除";
+            delBtn.classList.add("delete");
+            delBtn.onclick = () => {
+                if (confirm("このペットを削除しますか？")) {
+                    userPets.splice(index, 1);
+                    saveUserPets();
+                    renderPetList();
+                    renderPetCards();
+                }
+            };
 
-        btnBox.appendChild(editBtn);
-        btnBox.appendChild(delBtn);
+            btnBox.appendChild(editBtn);
+            btnBox.appendChild(delBtn);
+        }
 
         div.appendChild(label);
         div.appendChild(btnBox);
@@ -98,7 +153,7 @@ function renderPetList() {
 }
 
 // ======================================================
-//  ペット追加ボタン
+//  ペット追加ボタン（ユーザー追加のみ）
 // ======================================================
 const addPetBtn = document.getElementById("addPetBtn");
 if (addPetBtn) {
@@ -109,7 +164,7 @@ if (addPetBtn) {
 }
 
 // ======================================================
-//  ペット編集画面の開閉
+//  ペット編集画面の開閉（プリセットは呼び名・キーワードのみ）
 // ======================================================
 function openEditor(pet = null) {
     document.getElementById("petManager").style.display = "none";
@@ -127,13 +182,18 @@ function openEditor(pet = null) {
         document.getElementById("editKeywords").value = "";
     }
 
-    // ファイル入力は初期化
-    [
+    // プリセットは画像/動画編集不可
+    const isPreset = pet?.isPreset;
+    const fileInputs = [
         "img_n1","img_n2","img_n3","img_p3","img_p4",
         "vid_p1","vid_p2","vid_p5","vid_p6","vid_p7"
-    ].forEach(id => {
+    ];
+
+    fileInputs.forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.value = "";
+        if (!el) return;
+        el.value = "";
+        el.style.display = isPreset ? "none" : "block";
     });
 }
 
@@ -163,7 +223,8 @@ function fileToBlobURL(fileInput) {
 // ======================================================
 async function generateThumbnail(src) {
     if (!src) {
-        return "assets/common/placeholder.png";
+        // プレースホルダ（存在する画像に変更）
+        return "assets/usako/n1.png";
     }
     // 動画でも画像でも、そのまま <img> に表示
     return src;
@@ -191,11 +252,13 @@ async function renderPetCards() {
         const thumb = document.createElement("img");
         thumb.className = "pet-card-thumb";
 
-        // n1 が動画でも画像でもOK
+        // n1 → なければ p1 → それもなければ placeholder
         const n1src =
             pet.images?.n1 ||
+            pet.videos?.n1 ||
             pet.videos?.p1 ||
-            "assets/common/placeholder.png";
+            pet.images?.p1 ||
+            "assets/usako/n1.png";
 
         thumb.src = await generateThumbnail(n1src);
 
@@ -320,12 +383,13 @@ function handleVoiceCommand(text) {
     if (["伏せ"].some(w => text.includes(w))) { p3_until = now + 3; return; }
     if (["お手"].some(w => text.includes(w))) { p4_until = now + 3; return; }
 
-    // ★ n2 = お座り / 待て
+    // お座り / 待て
     if (["お座り", "待て", "ストップ"].some(w => text.includes(w))) {
         n2_until = now + 5;
         return;
     }
 
+    // 睡眠
     if (["ねんね", "おやすみ"].some(w => text.includes(w))) {
         n3_until = now + 9999;
         return;
@@ -341,7 +405,8 @@ let detectCamera;
 let lastFaceVisible = true;
 
 async function initFaceDetection() {
-    faceDetector = new FaceDetection.FaceDetection({
+    // ★ Mediapipe CDN は小文字の faceDetection 名前空間
+    faceDetector = new faceDetection.FaceDetection({
         locateFile: (file) =>
             `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`
     });
@@ -548,7 +613,7 @@ function showStateMedia(state) {
     } else {
         petVideo.style.display = "none";
         petImage.style.display = "block";
-        petImage.src = "assets/common/placeholder.png";
+        petImage.src = "assets/usako/n1.png"; // プレースホルダ
     }
 }
 
