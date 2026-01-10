@@ -66,26 +66,44 @@
 
         <div class="form-group">
             <label>呼び名（名前呼び）</label>
-            <input id="editAlias" type="text" placeholder="例：ジロ">
+            <input id="editAlias" type="text">
         </div>
 
         <div class="form-group">
             <label>声掛けキーワード（カンマ区切り）</label>
-            <input id="editKeywords" type="text" placeholder="例：いい子ね, グッド, 可愛いね">
+            <input id="editKeywords" type="text">
         </div>
 
-        <h3>画像（n1, n2, n3, p3, p4）</h3>
+        <h3>画像（静止画）</h3>
+        <label>通常の姿（n1）</label>
         <input id="img_n1" type="file" accept="image/*">
+
+        <label>待っている姿（n2）</label>
         <input id="img_n2" type="file" accept="image/*">
+
+        <label>寝ている姿（n3）</label>
         <input id="img_n3" type="file" accept="image/*">
+
+        <label>伏せの姿（p3）</label>
         <input id="img_p3" type="file" accept="image/*">
+
+        <label>お手の姿（p4）</label>
         <input id="img_p4" type="file" accept="image/*">
 
-        <h3>動画（p1, p2, p5, p6, p7）</h3>
+        <h3>動画（動きのある姿）</h3>
+        <label>一人遊び・散歩（p1）</label>
         <input id="vid_p1" type="file" accept="video/*">
+
+        <label>呼ばれた時の反応 / 喜び（p2）</label>
         <input id="vid_p2" type="file" accept="video/*">
+
+        <label>ごはんを食べる（p5）</label>
         <input id="vid_p5" type="file" accept="video/*">
+
+        <label>水を飲む（p6）</label>
         <input id="vid_p6" type="file" accept="video/*">
+
+        <label>トイレの様子（p7）</label>
         <input id="vid_p7" type="file" accept="video/*">
 
         <button id="savePetBtn">保存</button>
@@ -94,6 +112,7 @@
 
 </div>
 
+<!-- script.js は必ず body の最後 -->
 <script src="script.js"></script>
 
 </body>

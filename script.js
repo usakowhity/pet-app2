@@ -129,8 +129,10 @@ function openEditor(pet = null) {
     }
 
     // ファイル入力は初期化
-    ["img_n1","img_n2","img_n3","img_p3","img_p4",
-     "vid_p1","vid_p2","vid_p5","vid_p6","vid_p7"].forEach(id => {
+    [
+        "img_n1","img_n2","img_n3","img_p3","img_p4",
+        "vid_p1","vid_p2","vid_p5","vid_p6","vid_p7"
+    ].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = "";
     });
@@ -158,40 +160,14 @@ function fileToBlobURL(fileInput) {
     return URL.createObjectURL(fileInput.files[0]);
 }
 // ======================================================
-//  サムネイル生成（画像・動画どちらでもOK）
+//  サムネイル生成（安定版：動画でもそのまま表示）
 // ======================================================
 async function generateThumbnail(src) {
-    return new Promise((resolve) => {
-        if (!src) {
-            resolve("assets/common/placeholder.png");
-            return;
-        }
-
-        // 画像ならそのまま返す
-        if (!src.endsWith(".mp4") && !src.endsWith(".webm")) {
-            resolve(src);
-            return;
-        }
-
-        // 動画 → 1フレーム目をキャプチャ
-        const video = document.createElement("video");
-        video.src = src;
-        video.muted = true;
-        video.playsInline = true;
-
-        video.addEventListener("loadeddata", () => {
-            video.currentTime = 0.1;
-        });
-
-        video.addEventListener("seeked", () => {
-            const canvas = document.createElement("canvas");
-            canvas.width = 200;
-            canvas.height = 200;
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            resolve(canvas.toDataURL("image/png"));
-        });
-    });
+    if (!src) {
+        return "assets/common/placeholder.png";
+    }
+    // 動画でも画像でも、そのまま <img> に表示
+    return src;
 }
 
 
@@ -310,6 +286,7 @@ let p6_until = 0;  // 給水
 let p7_until = 0;  // トイレ
 let n2_until = 0;  // お座り / 待て
 let n3_until = 0;  // 睡眠
+
 
 // ======================================================
 //  音声コマンド処理（Whisper）
