@@ -348,6 +348,7 @@ function handleVoiceCommand(text) {
 
 // ======================================================
 //  FaceDetection（距離・手振り）
+//  ※ 旧 Mediapipe 用に最適化：faceDetection + Camera
 // ======================================================
 let faceDetector;
 let detectCamera;
@@ -355,9 +356,10 @@ let lastFaceVisible = true;
 
 async function initFaceDetection() {
 
-    faceDetector = new FaceDetection.FaceDetection({
+    // ★ 旧バージョン：faceDetection 名前空間 + バージョン無し CDN
+    faceDetector = new faceDetection.FaceDetection({
         locateFile: (file) =>
-            `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4.1646424915/${file}`
+            `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`
     });
 
     faceDetector.setOptions({
@@ -371,7 +373,8 @@ async function initFaceDetection() {
     video.style.display = "none";
     document.body.appendChild(video);
 
-    detectCamera = new CameraUtils.Camera(video, {
+    // ★ 旧 Mediapipe：CameraUtils ではなくグローバル Camera
+    detectCamera = new Camera(video, {
         onFrame: async () => {
             await faceDetector.send({ image: video });
         },
@@ -415,6 +418,7 @@ initFaceDetection();
 
 // ======================================================
 //  FaceMesh（表情・視線）
+//  ※ 旧 Mediapipe 用に最適化：new FaceMesh(...) + Camera
 // ======================================================
 let faceMesh = null;
 let smileCamera = null;
@@ -442,9 +446,10 @@ function isEyeContact(landmarks) {
 
 async function initFaceMesh() {
 
-    faceMesh = new FaceMesh.FaceMesh({
+    // ★ 旧バージョン：コンストラクタは new FaceMesh(...)
+    faceMesh = new FaceMesh({
         locateFile: (file) =>
-            `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${file}`
+            `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
     });
 
     faceMesh.setOptions({
@@ -460,7 +465,8 @@ async function initFaceMesh() {
     video.style.display = "none";
     document.body.appendChild(video);
 
-    smileCamera = new CameraUtils.Camera(video, {
+    // ★ 旧 Mediapipe：CameraUtils ではなくグローバル Camera
+    smileCamera = new Camera(video, {
         onFrame: async () => {
             await faceMesh.send({ image: video });
         },
@@ -552,5 +558,3 @@ function showStateMedia(state) {
         petImage.src = "assets/usako/n1.png";
     }
 }
-
-//
