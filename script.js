@@ -19,7 +19,7 @@ const soundMap = {
 };
 
 // ======================================================
-//  Whisper / 状態遷移フラグ（★最上部に移動済み）
+//  Whisper / 状態遷移フラグ
 // ======================================================
 let lastInteractionTime = Date.now();
 let p2_until = 0;  // 喜び
@@ -32,7 +32,7 @@ let n2_until = 0;  // お座り / 待て
 let n3_until = 0;  // 睡眠
 
 // ======================================================
-//  初回起動時：プリセットを自動登録（assets に完全一致）
+//  初回起動時：プリセットを自動登録
 // ======================================================
 function loadDefaultPresets() {
     if (localStorage.getItem("presetsLoaded")) return;
@@ -66,7 +66,7 @@ function loadDefaultPresets() {
             };
         }
 
-        // Usako（n3/p1/p2/p5 が mp4）
+        // Usako（動画混在）
         if (p.folder === "usako") {
             images = {
                 n1:`assets/usako/n1.png`,
@@ -84,7 +84,7 @@ function loadDefaultPresets() {
             };
         }
 
-        // Kuro（n1/n2/n3/p1/p2/p5 が mp4）
+        // Kuro（動画多め）
         if (p.folder === "kuro") {
             images = {
                 p3:`assets/kuro/p3.png`,
@@ -228,13 +228,12 @@ function fileToBlobURL(fileInput) {
     if (!fileInput || !fileInput.files || fileInput.files.length === 0) return null;
     return URL.createObjectURL(fileInput.files[0]);
 }
-
 // ======================================================
-//  サムネイル生成
+//  サムネイル生成（動画でも画像でもそのまま表示）
 // ======================================================
 async function generateThumbnail(src) {
-    if (!src) return "assets/usako/n1.png";
-    return src;
+    if (!src) return "assets/usako/n1.png"; // プレースホルダ
+    return src; // 動画でも画像でもOK
 }
 
 // ======================================================
@@ -258,6 +257,7 @@ async function renderPetCards() {
         const thumb = document.createElement("img");
         thumb.className = "pet-card-thumb";
 
+        // n1 → なければ p1 → それもなければ placeholder
         const n1src =
             pet.images?.n1 ||
             pet.videos?.n1 ||
@@ -284,6 +284,7 @@ async function renderPetCards() {
         petCardsContainer.appendChild(card);
     }
 
+    // 初期選択
     if (userPets.length > 0) selectPetByIndex(0);
 }
 
@@ -293,6 +294,7 @@ async function renderPetCards() {
 function selectPetByIndex(index) {
     currentPreset = userPets[index];
 
+    // カードの選択状態更新
     const cards = petCardsContainer.querySelectorAll(".pet-card");
     cards.forEach(card => {
         card.classList.toggle(
@@ -301,17 +303,22 @@ function selectPetByIndex(index) {
         );
     });
 
+    // 選んだ瞬間に通常状態を表示
     showStateMedia("n1");
+
+    // 説明文表示
     showPetDescription();
 
+    // 状態遷移リセット
     lastInteractionTime = Date.now();
 
+    // 選んだ瞬間に軽く喜ぶ
     const now = Date.now() / 1000;
     p2_until = now + 1.5;
 }
 
 // ======================================================
-//  説明文
+//  説明文表示
 // ======================================================
 function showPetDescription() {
     if (!petDescriptionBox) return;
@@ -323,7 +330,6 @@ function showPetDescription() {
 // ======================================================
 renderPetList();
 renderPetCards();
-
 // ======================================================
 //  Whisper（音声コマンド）
 // ======================================================
@@ -356,7 +362,6 @@ function handleVoiceCommand(text) {
         n3_until = now + 9999; return;
     }
 }
-
 // ======================================================
 //  FaceDetection（距離・手振り）
 // ======================================================
@@ -365,10 +370,12 @@ let detectCamera;
 let lastFaceVisible = true;
 
 async function initFaceDetection() {
-faceDetector = new faceDetection.FaceDetection({
-    locateFile: (file) =>
-        `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4.1646424915/${file}`
-});
+
+    // ★ 正しいクラス名：FaceDetection.FaceDetection
+    faceDetector = new FaceDetection.FaceDetection({
+        locateFile: (file) =>
+            `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4.1646424915/${file}`
+    });
 
     faceDetector.setOptions({
         model: "short",
@@ -381,7 +388,8 @@ faceDetector = new faceDetection.FaceDetection({
     video.style.display = "none";
     document.body.appendChild(video);
 
-    detectCamera = new Camera(video, {
+    // ★ 正しいクラス名：CameraUtils.Camera
+    detectCamera = new CameraUtils.Camera(video, {
         onFrame: async () => {
             await faceDetector.send({ image: video });
         },
@@ -422,7 +430,6 @@ function onFaceDetect(results) {
 }
 
 initFaceDetection();
-
 // ======================================================
 //  FaceMesh（表情・視線）
 // ======================================================
@@ -451,10 +458,13 @@ function isEyeContact(landmarks) {
 }
 
 async function initFaceMesh() {
-faceMesh = new FaceMesh({
-    locateFile: (file) =>
-        `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${file}`
-});
+
+    // ★ 正しいクラス名：FaceMesh.FaceMesh
+    faceMesh = new FaceMesh.FaceMesh({
+        locateFile: (file) =>
+            `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${file}`
+    });
+
     faceMesh.setOptions({
         maxNumFaces: 1,
         refineLandmarks: true,
@@ -468,7 +478,8 @@ faceMesh = new FaceMesh({
     video.style.display = "none";
     document.body.appendChild(video);
 
-    smileCamera = new Camera(video, {
+    // ★ 正しいクラス名：CameraUtils.Camera
+    smileCamera = new CameraUtils.Camera(video, {
         onFrame: async () => {
             await faceMesh.send({ image: video });
         },
@@ -501,24 +512,26 @@ function onSmileResults(results) {
 }
 
 initFaceMesh();
-
 // ======================================================
 //  状態遷移ロジック
 // ======================================================
 function determineState() {
     const now = Date.now() / 1000;
 
-    if (now < p5_until) return "p5";
-    if (now < p6_until) return "p6";
-    if (now < p7_until) return "p7";
-    if (now < p2_until) return "p2";
-    if (now < p3_until) return "p3";
-    if (now < p4_until) return "p4";
-    if (now < n2_until) return "n2";
-    if (now < n3_until) return "n3";
+    // 優先度の高い順
+    if (now < p5_until) return "p5"; // 食事
+    if (now < p6_until) return "p6"; // 給水
+    if (now < p7_until) return "p7"; // トイレ
+    if (now < p2_until) return "p2"; // 喜び
+    if (now < p3_until) return "p3"; // 伏せ
+    if (now < p4_until) return "p4"; // お手
+    if (now < n2_until) return "n2"; // お座り / 待て
+    if (now < n3_until) return "n3"; // 睡眠
 
+    // 長時間無反応 → 睡眠
     if (Date.now() - lastInteractionTime > 30000) return "n3";
 
+    // 通常状態
     return "n1";
 }
 
@@ -534,10 +547,12 @@ function showStateMedia(state) {
     const videoSrc = currentPreset.videos?.[state];
     const imageSrc = currentPreset.images?.[state];
 
+    // 動画を一旦停止
     petVideo.pause();
     petVideo.removeAttribute("src");
     petVideo.load();
 
+    // ★ 動画がある場合
     if (videoSrc) {
         petImage.style.display = "none";
         petVideo.style.display = "block";
@@ -549,14 +564,51 @@ function showStateMedia(state) {
 
         petVideo.play().catch(err => console.log("動画再生エラー:", err));
 
+    // ★ 画像がある場合
     } else if (imageSrc) {
         petVideo.style.display = "none";
         petImage.style.display = "block";
         petImage.src = imageSrc;
 
+    // ★ どちらも無い場合（代替）
     } else {
         petVideo.style.display = "none";
         petImage.style.display = "block";
         petImage.src = "assets/usako/n1.png"; // プレースホルダ
     }
 }
+
+// ======================================================
+//  メインループ
+// ======================================================
+let lastState = null;
+
+function mainLoop() {
+    const state = determineState();
+
+    // 状態が変わったときだけメディア更新
+    if (state !== lastState) {
+        showStateMedia(state);
+
+        // ★ p2（喜び）のときだけ鳴き声
+        if (state === "p2" && currentPreset) {
+            const sp = currentPreset.species;
+            if (soundMap[sp]) {
+                soundMap[sp].currentTime = 0;
+                soundMap[sp].play().catch(() => {});
+            }
+        }
+
+        lastState = state;
+
+        // デバッグログ
+        const log = document.getElementById("log");
+        if (log) {
+            log.textContent = `[${new Date().toLocaleTimeString()}] state = ${state}`;
+        }
+    }
+
+    requestAnimationFrame(mainLoop);
+}
+
+mainLoop();
