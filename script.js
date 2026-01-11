@@ -5,191 +5,247 @@ let raw = localStorage.getItem("userPets");
 let userPets = [];
 
 try {
-    userPets = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(userPets)) userPets = [];
+  userPets = raw ? JSON.parse(raw) : [];
+  if (!Array.isArray(userPets)) userPets = [];
 } catch (e) {
-    userPets = [];
+  userPets = [];
 }
 
 let currentPreset = null;
-let editingIndex = -1;
 
+// 保存
 function saveUserPets() {
-    localStorage.setItem("userPets", JSON.stringify(userPets));
+  localStorage.setItem("userPets", JSON.stringify(userPets));
 }
 
 // ======================================================
 //  初期プリセット（userPets が空のときだけ生成）
 // ======================================================
 if (userPets.length === 0) {
-    userPets = [
-        {
-            name: "Usako",
-            type: "rabbit",
-            alias: "",
-            keywords: ["かわいい", "うさぎ"],
-            images: ["assets/usako/n1.png", "assets/usako/n2.png"],
-            videos: ["assets/usako/p1.mp4"]
-        },
-        {
-            name: "Kuro",
-            type: "cat",
-            alias: "",
-            keywords: ["にゃー", "猫"],
-            images: ["assets/kuro/n1.png", "assets/kuro/n2.png"],
-            videos: ["assets/kuro/p1.mp4"]
-        },
-        {
-            name: "Taro",
-            type: "dog",
-            alias: "",
-            keywords: ["わんわん", "犬"],
-            images: ["assets/taro/n1.png", "assets/taro/n2.png"],
-            videos: ["assets/taro/p1.mp4"]
-        }
-    ];
-    saveUserPets();
+  userPets = [
+    {
+      id: "usako",
+      name: "Usako（白うさぎ）",
+      type: "rabbit",
+      alias: "",
+      keywords: ["かわいい", "うさぎ", "ラビット"],
+      images: ["assets/usako/n1.png"],
+      videos: ["assets/usako/p1.mp4"]
+    },
+    {
+      id: "kuro",
+      name: "Kuro（黒うさぎ）",
+      type: "rabbit",
+      alias: "",
+      keywords: ["黒うさぎ", "くろ"],
+      images: ["assets/kuro/n1.png"],
+      videos: ["assets/kuro/p1.mp4"]
+    },
+    {
+      id: "taro",
+      name: "Taro（パピヨン子犬）",
+      type: "dog",
+      alias: "",
+      keywords: ["たろう", "タロウ", "わんわん"],
+      images: ["assets/taro/n1.png"],
+      videos: ["assets/taro/p1.mp4"]
+    },
+    {
+      id: "marple",
+      name: "Marple（トイプードル）",
+      type: "dog",
+      alias: "",
+      keywords: ["マープル", "トイプー"],
+      images: ["assets/marple/n1.png"],
+      videos: ["assets/marple/p1.mp4"]
+    },
+    {
+      id: "pochi",
+      name: "Pochi（柴犬子犬）",
+      type: "dog",
+      alias: "",
+      keywords: ["ポチ", "しばいぬ"],
+      images: ["assets/pochi/n1.png"],
+      videos: ["assets/pochi/p1.mp4"]
+    },
+    {
+      id: "tama",
+      name: "Tama（猫）",
+      type: "cat",
+      alias: "",
+      keywords: ["たま", "にゃー", "ねこ"],
+      images: ["assets/tama/n1.png"],
+      videos: ["assets/tama/p1.mp4"]
+    }
+  ];
+  saveUserPets();
 }
 
 // ======================================================
-//  鳴き声マップ
+//  DOM 要素取得
 // ======================================================
-const soundMap = {
-    rabbit: new Audio("assets/sounds/bark_rabbit.mp3"),
-    dog: new Audio("assets/sounds/bark_dog.mp3"),
-    cat: new Audio("assets/sounds/bark_cat.mp3")
-};
+const petSelect = document.getElementById("pet-select");
+const statusDiv = document.getElementById("status");
+const petVideo = document.getElementById("pet-video");
+const petImg = document.getElementById("pet-img");
 
-// ======================================================
-//  状態遷移フラグ
-// ======================================================
-let lastInteractionTime = Date.now();
-let p2_until = 0;
-let p3_until = 0;
-let p4_until = 0;
-let p5_until = 0;
-let p6_until = 0;
-let p7_until = 0;
-let n2_until = 0;
-let n3_until = 0;
+const micBtn = document.getElementById("mic-btn");
+const cameraBtn = document.getElementById("camera-btn");
 
-// ======================================================
-//  ペットカード描画
-// ======================================================
-function renderPetCards() {
-    const container = document.getElementById("pet-list");
-    container.innerHTML = "";
+const barkSound = document.getElementById("bark-sound");
+const eatingSound = document.getElementById("eating-sound");
+const drinkingSound = document.getElementById("drinking-sound");
 
-    userPets.forEach((pet, index) => {
-        const card = document.createElement("div");
-        card.className = "pet-card";
-        card.innerHTML = `
-            <div class="pet-name">${pet.alias || pet.name}</div>
-        `;
-        card.addEventListener("click", () => selectPetByIndex(index));
-        container.appendChild(card);
-    });
-}
-
-// ======================================================
-//  ペット選択
-// ======================================================
-function selectPetByIndex(index) {
-    currentPreset = userPets[index];
-    editingIndex = index;
-
-    document.getElementById("selected-name").textContent =
-        currentPreset.alias || currentPreset.name;
-
-    showStateMedia();
-}
-
-// ======================================================
-//  状態に応じて画像・動画を表示
-// ======================================================
-function showStateMedia() {
-    if (!currentPreset) return;
-
-    const img = document.getElementById("pet-image");
-    const video = document.getElementById("pet-video");
-
-    img.style.display = "block";
-    video.style.display = "none";
-
-    img.src = currentPreset.images[0];
-}
-
-// ======================================================
-//  呼び名・言葉設定モーダル
-// ======================================================
+// モーダル関連
 const customModal = document.getElementById("custom-modal");
 const customBtn = document.getElementById("custom-btn");
 const saveCustomBtn = document.getElementById("save-custom");
 const closeModalBtn = document.getElementById("close-modal");
-
+const modalPetName = document.getElementById("modal-pet-name");
 const customNameInput = document.getElementById("custom-name");
 const customKeywordsInput = document.getElementById("custom-keywords");
-const modalPetName = document.getElementById("modal-pet-name");
 
-// モーダルを開く
+// ======================================================
+//  ユーティリティ
+// ======================================================
+function findPetById(id) {
+  return userPets.find(p => p.id === id) || null;
+}
+
+function updateStatus(text) {
+  statusDiv.textContent = text;
+}
+
+// ======================================================
+//  ペット表示更新
+// ======================================================
+function showCurrentPet() {
+  if (!currentPreset) {
+    petImg.style.display = "none";
+    petVideo.style.display = "none";
+    return;
+  }
+
+  // まず画像を表示（デフォルト）
+  petVideo.pause();
+  petVideo.style.display = "none";
+
+  if (currentPreset.images && currentPreset.images.length > 0) {
+    petImg.src = currentPreset.images[0];
+    petImg.style.display = "block";
+  } else {
+    petImg.style.display = "none";
+  }
+
+  const displayName = currentPreset.alias || currentPreset.name;
+  updateStatus(`「${displayName}」と遊んでね`);
+}
+
+// ======================================================
+//  セレクトボックスでペット選択
+// ======================================================
+petSelect.addEventListener("change", () => {
+  const id = petSelect.value;
+  currentPreset = findPetById(id);
+  showCurrentPet();
+});
+
+// 初期選択
+(function initSelection() {
+  const firstId = petSelect.value;
+  currentPreset = findPetById(firstId);
+  showCurrentPet();
+})();
+
+// ======================================================
+//  呼び名・言葉設定モーダル
+// ======================================================
 customBtn.addEventListener("click", () => {
-    if (!currentPreset) return;
+  if (!currentPreset) return;
 
-    modalPetName.textContent = currentPreset.name;
-    customNameInput.value = currentPreset.alias || "";
-    customKeywordsInput.value = currentPreset.keywords?.join(", ") || "";
+  modalPetName.textContent = currentPreset.name;
+  customNameInput.value = currentPreset.alias || "";
+  customKeywordsInput.value = currentPreset.keywords?.join(", ") || "";
 
-    customModal.style.display = "flex";
+  customModal.style.display = "flex";
 });
 
-// モーダルを閉じる
 closeModalBtn.addEventListener("click", () => {
-    customModal.style.display = "none";
+  customModal.style.display = "none";
 });
 
-// 保存処理
 saveCustomBtn.addEventListener("click", () => {
-    if (!currentPreset) return;
+  if (!currentPreset) return;
 
-    currentPreset.alias = customNameInput.value.trim();
+  currentPreset.alias = customNameInput.value.trim();
 
-    const raw = customKeywordsInput.value.trim();
-    currentPreset.keywords = raw
-        ? raw.split(",").map(w => w.trim()).filter(w => w.length > 0)
-        : [];
+  const raw = customKeywordsInput.value.trim();
+  currentPreset.keywords = raw
+    ? raw.split(",").map(w => w.trim()).filter(w => w.length > 0)
+    : [];
 
-    saveUserPets();
-    customModal.style.display = "none";
-    renderPetCards();
+  saveUserPets();
+  customModal.style.display = "none";
+  showCurrentPet();
 });
 
 // ======================================================
-//  音声認識（ブラウザ標準）
+//  音声認識（ブラウザ標準 / 簡易版）
 // ======================================================
 let recognition = null;
+let micActive = false;
 
 if ("webkitSpeechRecognition" in window) {
-    recognition = new webkitSpeechRecognition();
-    recognition.lang = "ja-JP";
-    recognition.continuous = true;
+  recognition = new webkitSpeechRecognition();
+  recognition.lang = "ja-JP";
+  recognition.continuous = true;
 
-    recognition.onresult = (event) => {
-        const text = event.results[event.results.length - 1][0].transcript;
-        handleVoiceInput(text);
-    };
+  recognition.onresult = (event) => {
+    const text = event.results[event.results.length - 1][0].transcript;
+    handleVoiceInput(text);
+  };
 
-    recognition.start();
+  recognition.onend = () => {
+    if (micActive) {
+      recognition.start();
+    }
+  };
 }
 
 function handleVoiceInput(text) {
-    if (!currentPreset) return;
+  if (!currentPreset || !currentPreset.keywords) return;
 
-    if (currentPreset.keywords.some(k => text.includes(k))) {
-        soundMap[currentPreset.type]?.play();
-    }
+  if (currentPreset.keywords.some(k => text.includes(k))) {
+    // 喜びリアクション：とりあえず吠え声＋ステータス
+    const displayName = currentPreset.alias || currentPreset.name;
+    updateStatus(`「${displayName}」は喜んでいるみたい！`);
+    barkSound.currentTime = 0;
+    barkSound.play().catch(() => {});
+  }
 }
 
+micBtn.addEventListener("click", () => {
+  if (!recognition) {
+    alert("このブラウザでは音声認識が利用できません。");
+    return;
+  }
+  if (!micActive) {
+    recognition.start();
+    micActive = true;
+    micBtn.textContent = "🎤 音声認識（停止）";
+  } else {
+    recognition.stop();
+    micActive = false;
+    micBtn.textContent = "🎤 音声認識";
+  }
+});
+
 // ======================================================
-//  初期化
+//  カメラ／笑顔検知ボタン（今はプレースホルダ）
 // ======================================================
-renderPetCards();
+cameraBtn.addEventListener("click", () => {
+  alert("笑顔検知は準備中です（FaceMesh は正常に読み込まれています）。");
+});
+
+// ここに mediapipe face_mesh / camera_utils を使った
+// 本格的な笑顔検知ロジックを後で追加できる。
