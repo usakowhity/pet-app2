@@ -354,3 +354,57 @@ function showStateMedia(state) {
         petImage.src = "assets/usako/n1.png";
     }
 }
+// ======================================================
+//  呼び名・言葉設定（モーダル制御）
+// ======================================================
+
+// モーダル要素
+const customModal = document.getElementById("custom-modal");
+const customBtn = document.getElementById("custom-btn");
+const saveCustomBtn = document.getElementById("save-custom");
+const closeModalBtn = document.getElementById("close-modal");
+
+const customNameInput = document.getElementById("custom-name");
+const customKeywordsInput = document.getElementById("custom-keywords");
+const modalPetName = document.getElementById("modal-pet-name");
+
+// モーダルを開く
+customBtn.addEventListener("click", () => {
+    if (!currentPreset) return;
+
+    modalPetName.textContent = currentPreset.name;
+
+    // 既存データを入力欄に反映
+    customNameInput.value = currentPreset.alias || "";
+    customKeywordsInput.value = currentPreset.keywords?.join(", ") || "";
+
+    customModal.style.display = "flex";
+});
+
+// モーダルを閉じる
+closeModalBtn.addEventListener("click", () => {
+    customModal.style.display = "none";
+});
+
+// 保存処理
+saveCustomBtn.addEventListener("click", () => {
+    if (!currentPreset) return;
+
+    // 呼び名
+    currentPreset.alias = customNameInput.value.trim();
+
+    // キーワード（カンマ区切り）
+    const raw = customKeywordsInput.value.trim();
+    currentPreset.keywords = raw
+        ? raw.split(",").map(w => w.trim()).filter(w => w.length > 0)
+        : [];
+
+    // 保存
+    saveUserPets();
+
+    // モーダルを閉じる
+    customModal.style.display = "none";
+
+    // UI更新（必要なら）
+    showPetDescription();
+});
