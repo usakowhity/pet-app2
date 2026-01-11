@@ -1,7 +1,22 @@
 // ======================================================
-//  ローカル保存データ
+//  ローカル保存データ（安全版）
 // ======================================================
-let userPets = JSON.parse(localStorage.getItem("userPets") || "[]");
+
+// localStorage の userPets が壊れていてもアプリが止まらないようにする
+let raw = localStorage.getItem("userPets");
+let userPets = [];
+
+try {
+    userPets = raw ? JSON.parse(raw) : [];
+    // 配列以外が入っていた場合もリセット
+    if (!Array.isArray(userPets)) {
+        userPets = [];
+    }
+} catch (e) {
+    // JSON が壊れていた場合は初期化
+    userPets = [];
+}
+
 let currentPreset = null;
 let editingIndex = -1;
 
@@ -30,7 +45,6 @@ let p6_until = 0;
 let p7_until = 0;
 let n2_until = 0;
 let n3_until = 0;
-
 // ======================================================
 //  初回プリセット登録（編集不可）
 // ======================================================
