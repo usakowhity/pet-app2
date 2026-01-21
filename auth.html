@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pet-app2 | ログイン</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <h2>pet-app2 ログイン</h2>
+
+  <div class="auth-container">
+
+    <input id="email" type="email" placeholder="メールアドレス" />
+    <input id="password" type="password" placeholder="パスワード" />
+
+    <button id="loginBtn">ログイン</button>
+    <button id="signupBtn" class="secondary">新規登録</button>
+
+    <p id="authMessage" class="auth-message"></p>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabaseClient.js"></script>
+  <script src="auth.js"></script>
+
+</body>
+</html>

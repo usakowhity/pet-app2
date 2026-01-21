@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>pet-app2</title>
+
+  <link rel="stylesheet" href="p2.css?v=1">
+
+  <style>
+    #mediaArea {
+      position: relative;
+      width: 300px;
+      margin: 20px auto;
+    }
+
+    #mediaWrapper {
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    #mediaElement {
+      width: 100%;
+      border-radius: 12px;
+    }
+
+    #modeButtons button {
+      margin: 5px;
+      padding: 10px 16px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2 style="text-align:center;">pet-app2</h2>
+
+  <div id="mediaArea">
+    <div id="mediaWrapper">
+      <img id="mediaElement" src="assets/images/taro_p2.jpg">
+    </div>
+  </div>
+
+  <!-- ★ 新しいモード一覧 UI（ここを追加） -->
+  <div id="mode-list" class="mode-list">
+    <button data-mode="n2">お座り</button>
+    <button data-mode="n3">寝んね</button>
+    <button data-mode="p1">遊ぶ</button>
+    <button data-mode="p2">喜び（動画）</button>
+    <button data-mode="p3">伏せ</button>
+    <button data-mode="p4">お手</button>
+    <button data-mode="p5">ごはん</button>
+    <button data-mode="p6">お水</button>
+    <button data-mode="p7">トイレ</button>
+    <button data-mode="p8">持ってこい</button>
+    <button data-mode="p9">ハウス</button>
+  </div>
+
+  <!-- ★ 生成結果の表示エリア -->
+  <div id="result-area" class="result-area">
+    <p>モードを選択してください。</p>
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>

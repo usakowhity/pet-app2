@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pet-app2 | ペット登録</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <h2>ペット登録</h2>
+
+  <div class="auth-container">
+
+    <!-- 種類選択 -->
+    <label>ペットの種類を選んでください</label>
+    <select id="species">
+      <option value="">選択してください</option>
+      <option value="dog">犬</option>
+      <option value="cat">猫</option>
+      <option value="rabbit">うさぎ</option>
+    </select>
+
+    <!-- n1画像アップロード -->
+    <label>代表画像（n1）をアップロード</label>
+    <input id="n1File" type="file" accept="image/*" />
+
+    <button id="registerBtn">登録する</button>
+
+    <p id="registerMessage" class="auth-message"></p>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabaseClient.js"></script>
+  <script src="pet-register.js"></script>
+
+</body>
+</html>
