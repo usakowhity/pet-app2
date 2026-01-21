@@ -2,9 +2,8 @@
    初期設定
 ------------------------------------------------------- */
 
-// API の URL（あなたのデプロイ先に変更）
+// API の URL（あなたのデプロイ先）
 const API_BASE = "https://pet-app2-api.vercel.app";
-// 例: https://pet-app2-api.vercel.app
 
 
 /* -------------------------------------------------------
@@ -45,8 +44,19 @@ async function generateAsset(mode) {
   const species = localStorage.getItem("species");
   const n1Url = localStorage.getItem("n1Url");
 
+  // デバッグログ（必要に応じて確認）
+  console.log("userId:", userId);
+  console.log("species:", species);
+  console.log("n1Url:", n1Url);
+
+  // 不足チェック
   if (!userId || !species || !n1Url) {
-    resultArea.innerHTML = `<p>ユーザー情報が不足しています。</p>`;
+    resultArea.innerHTML = `
+      <p>ユーザー情報が不足しています。</p>
+      <p>userId: ${userId}</p>
+      <p>species: ${species}</p>
+      <p>n1Url: ${n1Url}</p>
+    `;
     return;
   }
 

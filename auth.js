@@ -1,4 +1,15 @@
 /* -------------------------------------------------------
+   ★ 最重要：ログイン前でも userId を生成して保持する
+------------------------------------------------------- */
+
+let userId = localStorage.getItem("userId");
+
+if (!userId) {
+  userId = crypto.randomUUID();
+  localStorage.setItem("userId", userId);
+}
+
+/* -------------------------------------------------------
    Supabase Auth ログイン / 新規登録
 ------------------------------------------------------- */
 
@@ -31,7 +42,7 @@ loginBtn.addEventListener("click", async () => {
       return;
     }
 
-    // userId を保存
+    // Supabase の userId を保存（上書きOK）
     const userId = data.user.id;
     localStorage.setItem("userId", userId);
 
