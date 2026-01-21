@@ -7,9 +7,9 @@
   <!-- Supabase CDN（★ここだけでOK） -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Supabase 初期化（★ここで1回だけ） -->
+  <!-- Supabase 初期化（★正しい書き方） -->
   <script>
-    const supabase = supabase.createClient(
+    const supabaseClient = window.supabase.createClient(
       "https://lcpkqaoaqsotjaydukxs.supabase.co",
       "sb_publishable__fsG5IT4g30OLUOKchn79g_W4vFv6k8"
     );
@@ -43,8 +43,7 @@
 
   </div>
 
-  <!-- ★ Supabase を再読み込みしない！ -->
-  <!-- supabaseClient.js が supabase を使うなら、createClient を削除しておくこと -->
+  <!-- pet-register.js は supabaseClient を使う -->
   <script src="pet-register.js"></script>
 
 </body>
