@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <title>ペット登録</title>
 
-  <!-- Supabase CDN -->
+  <!-- Supabase CDN（★ここだけでOK） -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Supabase 初期化 -->
+  <!-- Supabase 初期化（★ここで1回だけ） -->
   <script>
     const supabase = supabase.createClient(
       "https://lcpkqaoaqsotjaydukxs.supabase.co",
@@ -43,8 +43,8 @@
 
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabaseClient.js"></script>
+  <!-- ★ Supabase を再読み込みしない！ -->
+  <!-- supabaseClient.js が supabase を使うなら、createClient を削除しておくこと -->
   <script src="pet-register.js"></script>
 
 </body>
