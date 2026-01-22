@@ -24,11 +24,16 @@ registerBtn.addEventListener("click", async () => {
     return;
   }
 
-  const userId = localStorage.getItem("userId");
-  if (!userId) {
+  /* -------------------------------------------------------
+     ★ Supabase Auth から現在ログイン中のユーザーIDを取得
+     （localStorage の userId は使わない）
+  ------------------------------------------------------- */
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) {
     showMessage("ログイン情報がありません。auth.html からログインしてください。");
     return;
   }
+  const userId = user.id;
 
   try {
     /* -------------------------------------------------------
