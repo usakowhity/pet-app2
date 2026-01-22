@@ -32,7 +32,7 @@ loginBtn.addEventListener("click", async () => {
   }
 
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
       email,
       password
     });
@@ -47,7 +47,7 @@ loginBtn.addEventListener("click", async () => {
     localStorage.setItem("userId", userId);
 
     // ペット登録が済んでいるか確認
-    const { data: petData } = await supabase
+    const { data: petData } = await supabaseClient
       .from("userPet")
       .select("*")
       .eq("userId", userId)
@@ -69,7 +69,6 @@ loginBtn.addEventListener("click", async () => {
   }
 });
 
-
 /* -------------------------------------------------------
    新規登録処理
 ------------------------------------------------------- */
@@ -83,7 +82,7 @@ signupBtn.addEventListener("click", async () => {
   }
 
   try {
-    const { error } = await supabase.auth.signUp({
+    const { error } = await supabaseClient.auth.signUp({
       email,
       password
     });
@@ -99,7 +98,6 @@ signupBtn.addEventListener("click", async () => {
     showMessage("通信エラー：" + err.message);
   }
 });
-
 
 /* -------------------------------------------------------
    メッセージ表示
