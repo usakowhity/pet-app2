@@ -14,17 +14,20 @@
   <div class="auth-container">
 
     <input id="email" type="email" placeholder="メールアドレス" />
-    <input id="password" type="password" placeholder="パスワード" />
 
-    <button id="loginBtn">ログイン</button>
-    <button id="signupBtn" class="secondary">新規登録</button>
+    <button id="loginBtn">ログイン（Magic Link）</button>
 
     <p id="authMessage" class="auth-message"></p>
 
   </div>
 
+  <!-- Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- あなたの Supabase クライアント -->
   <script src="supabaseClient.js"></script>
+
+  <!-- Magic Link ログイン処理 -->
   <script src="auth.js"></script>
 
 </body>
