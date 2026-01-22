@@ -4,12 +4,14 @@
   <meta charset="UTF-8">
   <title>ペット登録</title>
 
-  <!-- Supabase CDN -->
+  <!-- Supabase CDN（v2） -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Supabase 初期化（★変数名を supabase に統一） -->
+  <!-- Supabase 初期化（v2 形式） -->
   <script>
-    const supabase = window.supabase.createClient(
+    const { createClient } = supabase;
+
+    const supabaseClient = createClient(
       "https://lcpkqaoaqsotjaydukxs.supabase.co",
       "sb_publishable__fsG5IT4g30OLUOKchn79g_W4vFv6k8"
     );

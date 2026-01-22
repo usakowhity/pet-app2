@@ -37,7 +37,7 @@ registerBtn.addEventListener("click", async () => {
     const fileExt = file.name.split(".").pop();
     const filePath = `n1/${userId}.${fileExt}`;
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabaseClient.storage
       .from("pet-images")
       .upload(filePath, file, { upsert: true });
 
@@ -46,7 +46,7 @@ registerBtn.addEventListener("click", async () => {
       return;
     }
 
-    const { data: publicUrlData } = supabase.storage
+    const { data: publicUrlData } = supabaseClient.storage
       .from("pet-images")
       .getPublicUrl(filePath);
 
@@ -55,7 +55,7 @@ registerBtn.addEventListener("click", async () => {
     /* -------------------------------------------------------
        2. userPet テーブルに保存（1アカウント1匹）
     ------------------------------------------------------- */
-    const { error: insertError } = await supabase
+    const { error: insertError } = await supabaseClient
       .from("userPet")
       .upsert({
         userId,
@@ -84,7 +84,6 @@ registerBtn.addEventListener("click", async () => {
     showMessage("通信エラー：" + err.message);
   }
 });
-
 
 /* -------------------------------------------------------
    メッセージ表示
