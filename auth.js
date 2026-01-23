@@ -12,11 +12,11 @@ if (!userId) {
    DOM 要素
 ------------------------------------------------------- */
 const emailInput = document.getElementById("email");
-const loginBtn = document.getElementById("loginBtn");
+const loginBtn = document.getElementById("sendLinkBtn"); // ← auth.html のボタンIDと一致
 const authMessage = document.getElementById("authMessage");
 
 /* -------------------------------------------------------
-   Magic Link ログイン
+   Magic Link ログイン（サインアップ/ログイン統合）
 ------------------------------------------------------- */
 loginBtn.addEventListener("click", async () => {
   const email = emailInput.value.trim();
@@ -27,7 +27,7 @@ loginBtn.addEventListener("click", async () => {
   }
 
   try {
-    const { error } = await supabaseClient.auth.signInWithOtp({
+    const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
         emailRedirectTo: "https://usakowhity.github.io/pet-app2/pet-register.html"
@@ -39,7 +39,7 @@ loginBtn.addEventListener("click", async () => {
       return;
     }
 
-    showMessage("ログイン用リンクをメールに送信しました！", "success");
+    showMessage("Magic Link を送信しました。メールを確認してください。", "success");
 
   } catch (err) {
     showMessage("通信エラー：" + err.message);

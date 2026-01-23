@@ -3,32 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pet-app2 | ログイン</title>
+  <title>pet-app2 ログイン</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
 
-  <h2>pet-app2 ログイン</h2>
-
   <div class="auth-container">
+    <h2>pet-app2 ログイン</h2>
 
     <input id="email" type="email" placeholder="メールアドレス" />
 
-    <button id="loginBtn">ログイン（Magic Link）</button>
+    <button id="sendLinkBtn">Magic Link を送る</button>
 
-    <p id="authMessage" class="auth-message"></p>
-
+    <p id="message"></p>
   </div>
 
-  <!-- Supabase CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- あなたの Supabase クライアント -->
   <script src="supabaseClient.js"></script>
-
-  <!-- Magic Link ログイン処理 -->
-  <script src="auth.js"></script>
-
+  <script src="script.js"></script>
 </body>
 </html>
