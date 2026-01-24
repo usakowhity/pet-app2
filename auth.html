@@ -18,7 +18,18 @@
     <p id="authMessage"></p>
   </div>
 
-  <script src="supabaseClient.js" type="module"></script>
+  <!-- Supabase を HTML 内で直接初期化（GitHub Pages で最も安定） -->
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    // グローバルに supabase を公開（auth.js から参照できる）
+    window.supabase = createClient(
+      "https://lcpkqaoaqsotjaydukxs.supabase.co",
+      "sb_publishable__fsG5IT4g30OLUOKchn79g_W4vFv6k8"
+    );
+  </script>
+
+  <!-- ログイン処理 -->
   <script src="auth.js" type="module"></script>
 </body>
 </html>
