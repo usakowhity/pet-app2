@@ -66,7 +66,7 @@ registerBtn.addEventListener("click", async () => {
         userId,
         species,
         n1Url,
-        createdAt: new Date().toISOString()
+        created_at: new Date().toISOString()
       });
 
     if (insertError) {
