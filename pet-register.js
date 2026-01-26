@@ -1,99 +1,107 @@
 /* -------------------------------------------------------
-   ペット登録処理（species + n1画像）
+   DOM 取得
 ------------------------------------------------------- */
+const speciesEl = document.getElementById("species");
+const n1El = document.getElementById("n1");
+const previewEl = document.getElementById("preview");
+const customNameEl = document.getElementById("customName");
+const customKeywordsEl = document.getElementById("customKeywords");
+const saveBtn = document.getElementById("saveBtn");
+const messageEl = document.getElementById("message");
 
-const speciesSelect = document.getElementById("species");
-const n1FileInput = document.getElementById("n1File");
-const registerBtn = document.getElementById("registerBtn");
-const registerMessage = document.getElementById("registerMessage");
 
 /* -------------------------------------------------------
-   登録ボタン
+   n1 プレビュー表示
 ------------------------------------------------------- */
-registerBtn.addEventListener("click", async () => {
-  const species = speciesSelect.value;
-  const file = n1FileInput.files[0];
+n1El.addEventListener("change", () => {
+  const file = n1El.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    previewEl.src = e.target.result;
+    previewEl.style.display = "block";
+  };
+  reader.readAsDataURL(file);
+});
+
+
+/* -------------------------------------------------------
+   Supabase Storage に n1 をアップロード
+------------------------------------------------------- */
+async function uploadN1ToSupabase(file, userId) {
+  const fileExt = file.name.split(".").pop();
+  const fileName = `n1_${userId}.${fileExt}`;
+  const filePath = `n1/${fileName}`;
+
+  const { data, error } = await window.supabase.storage
+    .from("pet-images")
+    .upload(filePath, file, { upsert: true });
+
+  if (error) {
+    console.error("Upload error:", error);
+    throw new Error("画像アップロードに失敗しました");
+  }
+
+  // 公開URLを取得
+  const { data: urlData } = window.supabase.storage
+    .from("pet-images")
+    .getPublicUrl(filePath);
+
+  return urlData.publicUrl;
+}
+
+
+/* -------------------------------------------------------
+   保存処理
+------------------------------------------------------- */
+saveBtn.addEventListener("click", async () => {
+  messageEl.textContent = "";
+
+  const species = speciesEl.value;
+  const customName = customNameEl.value.trim();
+  const customKeywords = customKeywordsEl.value.trim();
+  const file = n1El.files[0];
+
+  // userId はログイン時に保存済み
+  const userId = localStorage.getItem("userId");
+
+  if (!userId) {
+    messageEl.textContent = "ログイン情報がありません。auth.html からログインしてください。";
+    return;
+  }
 
   if (!species) {
-    showMessage("ペットの種類を選択してください。");
+    messageEl.textContent = "ペットの種類を選択してください。";
     return;
   }
 
   if (!file) {
-    showMessage("代表画像（n1）をアップロードしてください。");
+    messageEl.textContent = "代表写真（n1）を選択してください。";
     return;
   }
-
-  /* -------------------------------------------------------
-     ★ Supabase Auth から現在ログイン中のユーザーIDを取得
-     （localStorage の userId は使わない）
-  ------------------------------------------------------- */
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!user) {
-    showMessage("ログイン情報がありません。auth.html からログインしてください。");
-    return;
-  }
-  const userId = user.id;
 
   try {
-    /* -------------------------------------------------------
-       1. n1画像を Supabase Storage にアップロード
-    ------------------------------------------------------- */
-    const fileExt = file.name.split(".").pop();
-    const filePath = `n1/${userId}.${fileExt}`;
+    messageEl.textContent = "画像をアップロード中…";
 
-    const { error: uploadError } = await supabaseClient.storage
-      .from("pet-images")
-      .upload(filePath, file, { upsert: true });
+    // n1 を Supabase にアップロード
+    const n1Url = await uploadN1ToSupabase(file, userId);
 
-    if (uploadError) {
-      showMessage("画像アップロードに失敗しました：" + uploadError.message);
-      return;
-    }
-
-    const { data: publicUrlData } = supabaseClient.storage
-      .from("pet-images")
-      .getPublicUrl(filePath);
-
-    const n1Url = publicUrlData.publicUrl;
-
-    /* -------------------------------------------------------
-       2. userPet テーブルに保存（1アカウント1匹）
-    ------------------------------------------------------- */
-    const { error: insertError } = await supabaseClient
-      .from("userPet")
-      .upsert({
-        userId,
-        species,
-        n1Url,
-        created_at: new Date().toISOString()
-      });
-
-    if (insertError) {
-      showMessage("データ保存に失敗しました：" + insertError.message);
-      return;
-    }
-
-    /* -------------------------------------------------------
-       3. localStorage に保存
-    ------------------------------------------------------- */
+    // localStorage に保存
     localStorage.setItem("species", species);
     localStorage.setItem("n1Url", n1Url);
+    localStorage.setItem("customName", customName);
+    localStorage.setItem("customKeywords", customKeywords);
 
-    /* -------------------------------------------------------
-       4. index.html に遷移
-    ------------------------------------------------------- */
-    window.location.href = "index.html";
+    messageEl.textContent = "保存が完了しました！";
+
+    // 1秒後にメイン画面へ
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 1000);
 
   } catch (err) {
-    showMessage("通信エラー：" + err.message);
+    console.error(err);
+    messageEl.textContent = "保存中にエラーが発生しました。";
   }
 });
-
-/* -------------------------------------------------------
-   メッセージ表示
-------------------------------------------------------- */
-function showMessage(msg, type = "error") {
-  registerMessage.textContent = msg;
-  registerMessage.style.color = type === "success" ? "#2a7" : "#d33";
-}

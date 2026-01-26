@@ -2,11 +2,26 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>pet-app2</title>
 
-  <link rel="stylesheet" href="p2.css?v=1">
+  <!-- MediaPipe（笑顔検知用） -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 
   <style>
+    body {
+      font-family: sans-serif;
+      background: #fafafa;
+      padding-bottom: 40px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    /* ペット表示領域 */
     #mediaArea {
       position: relative;
       width: 300px;
@@ -24,46 +39,123 @@
       border-radius: 12px;
     }
 
-    #modeButtons button {
-      margin: 5px;
-      padding: 10px 16px;
-      font-size: 16px;
+    /* モード選択UI */
+    .mode-section {
+      margin: 20px auto;
+      text-align: center;
+    }
+
+    .generate-area {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    #result-area {
+      text-align: center;
+      margin-top: 20px;
+      min-height: 80px;
+    }
+
+    /* -------------------------------------------------------
+       生成中の UI 制御（回転・無効化）
+    ------------------------------------------------------- */
+    .active-rotate {
+      animation: spin 1s linear infinite;
+      opacity: 1;
+    }
+
+    .disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* ローディング表示 */
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 4px solid #ccc;
+      border-top-color: #4CAF50;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
     }
   </style>
 </head>
 
 <body>
 
-  <h2 style="text-align:center;">pet-app2</h2>
+  <h2>pet-app2</h2>
 
+  <!-- ペット表示領域（n1 がホーム画面） -->
   <div id="mediaArea">
     <div id="mediaWrapper">
-      <img id="mediaElement" src="assets/images/taro_p2.jpg">
+      <img id="mediaElement" src="">
     </div>
   </div>
 
-  <!-- ★ 新しいモード一覧 UI -->
-  <div id="mode-list" class="mode-list">
-    <button data-mode="n2">お座り</button>
-    <button data-mode="n3">寝んね</button>
-    <button data-mode="p1">遊ぶ</button>
-    <button data-mode="p2">喜び（動画）</button>
-    <button data-mode="p3">伏せ</button>
-    <button data-mode="p4">お手</button>
-    <button data-mode="p5">ごはん</button>
-    <button data-mode="p6">お水</button>
-    <button data-mode="p7">トイレ</button>
-    <button data-mode="p8">持ってこい</button>
-    <button data-mode="p9">ハウス</button>
+  <!-- 動画（p2） -->
+  <div class="mode-section">
+    <h3>動画（おすすめ）</h3>
+    <button id="videoModeBtn" data-mode="p2">喜び動画を生成する</button>
   </div>
 
-  <!-- ★ 生成結果の表示エリア -->
-  <div id="result-area" class="result-area">
+  <!-- 画像（n2〜p9 の中から1つ） -->
+  <div class="mode-section">
+    <h3>画像（どれか1つ）</h3>
+    <select id="imageModeSelect">
+      <option value="">選択してください</option>
+      <option value="n2">お座り</option>
+      <option value="n3">寝んね</option>
+      <option value="p1">遊ぶ</option>
+      <option value="p3">伏せ</option>
+      <option value="p4">お手</option>
+      <option value="p5">ごはん</option>
+      <option value="p6">お水</option>
+      <option value="p7">トイレ</option>
+      <option value="p8">持ってこい</option>
+      <option value="p9">ハウス</option>
+    </select>
+  </div>
+
+  <!-- 生成ボタン -->
+  <div class="generate-area">
+    <button id="generateBtn">生成する</button>
+  </div>
+
+  <!-- 結果表示 -->
+  <div id="result-area">
     <p>モードを選択してください。</p>
   </div>
 
-  <!-- ★ 次に script.js を読み込む（module 必須） -->
+  <!-- インタラクション用（音声・笑顔・撫でる） -->
+  <div id="interaction-controls" style="text-align:center; margin-top:30px;">
+    <button id="mic-btn">🎤 声で反応</button>
+    <button id="camera-btn">📷 笑顔で反応</button>
+  </div>
+
+  <!-- カメラ入力（非表示） -->
+  <video id="input-video" style="display:none;"></video>
+
+  <!-- 種族別の音声 -->
+  <audio id="pet-sound"></audio>
+
+  <!-- script.js（生成ロジック＋インタラクション統合版） -->
   <script type="module" src="script.js"></script>
+
+  <script>
+    // ページ読み込み時に n1 を表示
+    window.addEventListener("DOMContentLoaded", () => {
+      const n1 = localStorage.getItem("n1Url");
+      if (n1) {
+        document.getElementById("mediaElement").src = n1;
+      }
+    });
+  </script>
 
 </body>
 </html>

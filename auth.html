@@ -6,23 +6,45 @@
   <title>pet-app2 ログイン</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
+  <!-- ペットアイコン -->
+  <div style="text-align:center; margin-top:40px;">
+    <img
+      src="assets/images/pet-icon.jpg"
+      alt="pet icon"
+      style="
+        width:160px;
+        height:160px;
+        border-radius:50%;
+        object-fit:cover;
+        box-shadow:0 4px 12px rgba(0,0,0,0.2);
+      "
+    >
+  </div>
+
+  <!-- ログインフォーム -->
   <div class="auth-container">
     <h2>pet-app2 ログイン</h2>
 
-    <input id="email" type="email" placeholder="メールアドレス" />
+    <input
+      id="email"
+      type="email"
+      placeholder="メールアドレス"
+      autocomplete="email"
+    />
 
     <button id="sendLinkBtn">Magic Link を送る</button>
 
     <p id="authMessage"></p>
   </div>
 
-  <!-- Supabase を HTML 内で直接初期化（GitHub Pages で最も安定） -->
+  <!-- Supabase 初期化 -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    // グローバルに supabase を公開（auth.js から参照できる）
+    // グローバルに supabase を公開（auth.js から参照）
     window.supabase = createClient(
       "https://lcpkqaoaqsotjaydukxs.supabase.co",
       "sb_publishable__fsG5IT4g30OLUOKchn79g_W4vFv6k8"
@@ -31,5 +53,6 @@
 
   <!-- ログイン処理 -->
   <script src="auth.js" type="module"></script>
+
 </body>
 </html>

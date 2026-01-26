@@ -1,152 +1,205 @@
 /* -------------------------------------------------------
    初期設定
 ------------------------------------------------------- */
-
-// API の URL（あなたのデプロイ先）
 const API_BASE = "https://pet-app2-api.vercel.app";
 
-
-/* -------------------------------------------------------
-   DOM 要素
-------------------------------------------------------- */
-const modeList = document.getElementById("mode-list");
+const videoBtn = document.getElementById("videoModeBtn");
+const imageSelect = document.getElementById("imageModeSelect");
+const generateBtn = document.getElementById("generateBtn");
 const resultArea = document.getElementById("result-area");
-const mediaElement = document.getElementById("mediaElement"); // 初期画像
+let mediaElement = document.getElementById("mediaElement");
+
+let selectedMode = null;
+let generatedAsset = null; // ← 生成済みの動画/画像を保持
 
 
 /* -------------------------------------------------------
-   モード選択処理
+   モード選択
 ------------------------------------------------------- */
-modeList.addEventListener("click", async (e) => {
-  const btn = e.target.closest("button");
-  if (!btn) return;
+videoBtn.addEventListener("click", () => {
+  selectedMode = "p2";
+  imageSelect.value = "";
+  resultArea.textContent = "喜び動画を生成します。";
+});
 
-  const mode = btn.dataset.mode;
-
-  // active クラス切り替え
-  document.querySelectorAll("#mode-list button").forEach((b) => {
-    b.classList.toggle("active", b.dataset.mode === mode);
-  });
-
-  // 生成開始
-  await generateAsset(mode);
+imageSelect.addEventListener("change", () => {
+  selectedMode = imageSelect.value;
+  resultArea.textContent = selectedMode ? "画像を生成します。" : "モードを選択してください。";
 });
 
 
 /* -------------------------------------------------------
-   生成 API 呼び出し
+   ボタン状態制御
 ------------------------------------------------------- */
-async function generateAsset(mode) {
-  resultArea.innerHTML = `<p class="loading-text">生成中です… 少し待ってね。</p>`;
+function setButtonState(activeMode) {
+  const buttons = document.querySelectorAll(".mode-section button, .mode-section select");
 
-  // ローカルストレージからユーザー情報取得
-  const userId = localStorage.getItem("userId");
-  const species = localStorage.getItem("species");
-  const n1Url = localStorage.getItem("n1Url");
+  buttons.forEach(btn => {
+    if (btn.dataset.mode === activeMode || btn.value === activeMode) {
+      btn.classList.add("active-rotate");
+      btn.disabled = false;
+    } else {
+      btn.classList.remove("active-rotate");
+      btn.disabled = true;
+      btn.classList.add("disabled");
+    }
+  });
+}
 
-  // デバッグログ（必要に応じて確認）
-  console.log("userId:", userId);
-  console.log("species:", species);
-  console.log("n1Url:", n1Url);
+function resetButtonState() {
+  const buttons = document.querySelectorAll(".mode-section button, .mode-section select");
 
-  // 不足チェック
-  if (!userId || !species || !n1Url) {
-    resultArea.innerHTML = `
-      <p>ユーザー情報が不足しています。</p>
-      <p>userId: ${userId}</p>
-      <p>species: ${species}</p>
-      <p>n1Url: ${n1Url}</p>
-    `;
+  buttons.forEach(btn => {
+    btn.classList.remove("active-rotate");
+    btn.classList.remove("disabled");
+    btn.disabled = false;
+  });
+}
+
+
+/* -------------------------------------------------------
+   生成ボタン
+------------------------------------------------------- */
+generateBtn.addEventListener("click", async () => {
+  if (!selectedMode) {
+    resultArea.textContent = "モードを選択してください。";
     return;
   }
 
+  setButtonState(selectedMode);
+  showLoadingAnimation();
+
+  if (selectedMode === "p2") {
+    await generateVideo();
+  } else {
+    await generateImage(selectedMode);
+  }
+
+  hideLoadingAnimation();
+  resetButtonState();
+
+  // 生成結果を保存（表示はしない）
+  generatedAsset = {
+    mode: selectedMode,
+    url: mediaElement.src
+  };
+
+  // n1 に戻す
+  mediaElement.src = localStorage.getItem("n1Url");
+  resultArea.textContent = "生成が完了しました。インタラクションで再生できます。";
+});
+
+
+/* -------------------------------------------------------
+   生成中アニメーション
+------------------------------------------------------- */
+function showLoadingAnimation() {
+  resultArea.innerHTML = `
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>生成中です… 少しお待ちください。</p>
+    </div>
+  `;
+}
+
+function hideLoadingAnimation() {
+  resultArea.innerHTML = "";
+}
+
+
+/* -------------------------------------------------------
+   画像生成
+------------------------------------------------------- */
+async function generateImage(mode) {
   try {
-    let response;
+    const userId = localStorage.getItem("userId");
+    const species = localStorage.getItem("species");
+    const n1Url = localStorage.getItem("n1Url");
 
-    /* ------------------------------
-       p2（動画生成）
-    ------------------------------ */
-    if (mode === "p2") {
-      response = await fetch(`${API_BASE}/generate-video`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, species, n1Url })
-      });
-
-      const data = await response.json();
-      if (!data.ok) {
-        resultArea.innerHTML = `<p>エラー: ${data.error}</p>`;
-        return;
-      }
-
-      // 結果表示
-      resultArea.innerHTML = `
-        <p>生成完了！</p>
-        <img src="${data.imageUrl}" alt="thumbnail" />
-        <video src="${data.videoUrl}" controls></video>
-      `;
-
-      // ★ species に応じた音声を再生
-      playSpeciesSound();
-
-      return;
-    }
-
-    /* ------------------------------
-       n2〜n9 / p1 / p3〜p9（静止画）
-    ------------------------------ */
-    response = await fetch(`${API_BASE}/generate-image`, {
+    const res = await fetch(`${API_BASE}/api/generate-image`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, modeId: mode, species, n1Url })
     });
 
-    const data = await response.json();
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
 
-    if (!data.ok) {
-      resultArea.innerHTML = `<p>エラー: ${data.error}</p>`;
-      return;
-    }
-
-    // 結果表示
-    resultArea.innerHTML = `
-      <p>生成完了！</p>
-      <img src="${data.assetUrl}" alt="generated image" />
-    `;
+    mediaElement.src = data.assetUrl;
 
   } catch (err) {
-    resultArea.innerHTML = `<p>通信エラー: ${err.message}</p>`;
+    resultArea.textContent = "通信エラー：" + err.message;
   }
 }
 
 
 /* -------------------------------------------------------
-   音声再生機能（species に応じて切り替え）
+   動画生成
 ------------------------------------------------------- */
-function playSpeciesSound() {
-  const species = localStorage.getItem("species");
-  if (!species) return;
+async function generateVideo() {
+  try {
+    const userId = localStorage.getItem("userId");
+    const species = localStorage.getItem("species");
+    const n1Url = localStorage.getItem("n1Url");
 
-  let soundPath = "";
+    const res = await fetch(`${API_BASE}/api/generate-video`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, species, n1Url })
+    });
 
-  switch (species) {
-    case "dog":
-      soundPath = "assets/sounds/dog-happy.mp3";
-      break;
-    case "cat":
-      soundPath = "assets/sounds/cat-happy.mp3";
-      break;
-    case "rabbit":
-      soundPath = "assets/sounds/rabbit-happy.mp3";
-      break;
-    default:
-      return;
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+
+    mediaElement.src = data.videoUrl;
+
+  } catch (err) {
+    resultArea.textContent = "通信エラー：" + err.message;
   }
-
-  const audio = new Audio(soundPath);
-  audio.volume = 0.8;
-
-  audio.play().catch(() => {
-    console.log("音声の自動再生がブロックされました。ユーザー操作後に再生されます。");
-  });
 }
+
+
+/* -------------------------------------------------------
+   インタラクション発火 → 生成済みの動画/画像を表示
+------------------------------------------------------- */
+function triggerGeneratedAsset() {
+  if (!generatedAsset) return;
+
+  const { mode, url } = generatedAsset;
+
+  if (mode === "p2") {
+    mediaElement.outerHTML = `
+      <video id="mediaElement" src="${url}" autoplay playsinline></video>
+    `;
+    mediaElement = document.getElementById("mediaElement");
+
+    mediaElement.onended = () => returnToN1();
+  } else {
+    mediaElement.src = url;
+    setTimeout(returnToN1, 10000);
+  }
+}
+
+
+/* -------------------------------------------------------
+   n1 に戻る
+------------------------------------------------------- */
+function returnToN1() {
+  mediaElement.outerHTML = `
+    <img id="mediaElement" src="${localStorage.getItem("n1Url")}" />
+  `;
+  mediaElement = document.getElementById("mediaElement");
+}
+
+
+/* -------------------------------------------------------
+   インタラクション（撫でる・声・笑顔）
+------------------------------------------------------- */
+function triggerPetReaction() {
+  playSpeciesSound();
+  triggerGeneratedAsset();
+}
+
+/* 既存の enableTouchInteraction / enableVoiceInteraction / enableSmileDetection はそのまま利用 */
+
+

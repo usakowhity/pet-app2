@@ -2,32 +2,72 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>ペット登録</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ペット登録 | pet-app2</title>
 
-  <!-- Supabase CDN（v2） -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Supabase 初期化（v2 形式） -->
-  <script>
-    const { createClient } = supabase;
-
-    const supabaseClient = createClient(
-      "https://lcpkqaoaqsotjaydukxs.supabase.co",
-      "sb_publishable__fsG5IT4g30OLUOKchn79g_W4vFv6k8"
-    );
-  </script>
-
-  <link rel="stylesheet" href="p2.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #fafafa;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .container {
+      max-width: 420px;
+      margin: 0 auto;
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 20px;
+    }
+    select, input[type="text"], input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    #preview {
+      width: 100%;
+      margin-top: 12px;
+      border-radius: 12px;
+      display: none;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 30px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #message {
+      margin-top: 20px;
+      text-align: center;
+      color: #333;
+    }
+  </style>
 </head>
 
 <body>
 
-  <h2>ペット登録</h2>
+  <h2>ペットの基本設定</h2>
 
-  <div class="auth-container">
+  <div class="container">
 
-    <!-- 種類選択 -->
-    <label>ペットの種類を選んでください</label>
+    <!-- 種族 -->
+    <label for="species">ペットの種類</label>
     <select id="species">
       <option value="">選択してください</option>
       <option value="dog">犬</option>
@@ -35,13 +75,23 @@
       <option value="rabbit">うさぎ</option>
     </select>
 
-    <!-- n1画像アップロード -->
-    <label>代表画像（n1）をアップロード</label>
-    <input id="n1File" type="file" accept="image/*" />
+    <!-- n1（代表写真） -->
+    <label for="n1">代表写真（n1）</label>
+    <input id="n1" type="file" accept="image/*">
+    <img id="preview" alt="preview">
 
-    <button id="registerBtn">登録する</button>
+    <!-- 呼び名 -->
+    <label for="customName">呼び名（例：タロウ）</label>
+    <input id="customName" type="text" placeholder="ペットの呼び名">
 
-    <p id="registerMessage" class="auth-message"></p>
+    <!-- 喜びトリガー言葉 -->
+    <label for="customKeywords">喜びトリガー言葉（カンマ区切り）</label>
+    <input id="customKeywords" type="text" placeholder="例：いい子ね, 可愛いね, グッド">
+
+    <!-- 保存 -->
+    <button id="saveBtn">保存する</button>
+
+    <p id="message"></p>
 
   </div>
 
