@@ -27,13 +27,14 @@ n1El.addEventListener("change", () => {
 
 
 /* -------------------------------------------------------
-   Supabase Storage に n1 をアップロード
+   Supabase Storage に n1 をアップロード（v2対応）
 ------------------------------------------------------- */
 async function uploadN1ToSupabase(file, userId) {
   const fileExt = file.name.split(".").pop();
   const fileName = `n1_${userId}.${fileExt}`;
   const filePath = `n1/${fileName}`;
 
+  // アップロード
   const { data, error } = await window.supabase.storage
     .from("pet-images")
     .upload(filePath, file, { upsert: true });
@@ -43,7 +44,7 @@ async function uploadN1ToSupabase(file, userId) {
     throw new Error("画像アップロードに失敗しました");
   }
 
-  // 公開URLを取得
+  // 公開URL取得（v2）
   const { data: urlData } = window.supabase.storage
     .from("pet-images")
     .getPublicUrl(filePath);
@@ -63,7 +64,6 @@ saveBtn.addEventListener("click", async () => {
   const customKeywords = customKeywordsEl.value.trim();
   const file = n1El.files[0];
 
-  // userId はログイン時に保存済み
   const userId = localStorage.getItem("userId");
 
   if (!userId) {
