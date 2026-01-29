@@ -191,13 +191,14 @@ cameraBtn.addEventListener("click", async () => {
     }
   });
 
-  const camera = new Camera(inputVideo, {
-    onFrame: async () => {
-      await faceMesh.send({ image: inputVideo });
-    },
-    width: 300,
-    height: 300,
-  });
-
-  camera.start();
+const camera = new Camera(inputVideo, {
+  onFrame: async () => {
+    await faceMesh.send({ image: inputVideo });
+  },
+  width: 300,
+  height: 300,
 });
+
+camera.start();
+});   // ← cameraBtn の閉じ
+});   // ← DOMContentLoaded の閉じ
