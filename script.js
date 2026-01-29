@@ -1,15 +1,18 @@
-// --- apiClient が読み込まれるまで待つ ---
-function waitForApiClient() {
-  return new Promise((resolve) => {
-    const check = () => {
-      if (window.apiClient) resolve();
-      else setTimeout(check, 50);
-    };
-    check();
-  });
-}
+document.addEventListener("DOMContentLoaded", async () => {
 
-await waitForApiClient();
+  // --- apiClient が読み込まれるまで待つ ---
+  function waitForApiClient() {
+    return new Promise((resolve) => {
+      const check = () => {
+        if (window.apiClient) resolve();
+        else setTimeout(check, 50);
+      };
+      check();
+    });
+  }
+
+  await waitForApiClient();
+
 
 /* -------------------------------------------------------
    DOM 取得
