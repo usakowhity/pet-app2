@@ -95,18 +95,9 @@
 
   </div>
 
-  <!-- Supabase SDK v2（必須） -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Supabase 初期化 -->
-  <script>
-    const SUPABASE_URL = "https://lcpkqaoaqsotjaydukxs.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable__fsG5IT4g30OLUOKchn79g_W4vFv6k8";
-
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    console.log("Supabase client initialized:", window.supabase);
-  </script>
+  <!-- API設定 & クライアント（Railway連携に必須） -->
+  <script src="api-config.js"></script>
+  <script src="api-client.js"></script>
 
   <!-- 保存処理 -->
   <script src="pet-register.js"></script>

@@ -1,5 +1,3 @@
-import { supabase } from "./supabaseClient.js";
-
 /* -------------------------------------------------------
    ★ userId を事前生成（ログイン前でも一意に持つ）
 ------------------------------------------------------- */
@@ -14,11 +12,11 @@ if (!userId) {
    DOM 要素
 ------------------------------------------------------- */
 const emailInput = document.getElementById("email");
-const loginBtn = document.getElementById("sendLinkBtn"); // ← auth.html のボタンIDと一致
+const loginBtn = document.getElementById("sendLinkBtn");
 const authMessage = document.getElementById("authMessage");
 
 /* -------------------------------------------------------
-   Magic Link ログイン（サインアップ/ログイン統合）
+   Railway API によるログイン（Magic Link 送信）
 ------------------------------------------------------- */
 loginBtn.addEventListener("click", async () => {
   const email = emailInput.value.trim();
@@ -29,19 +27,27 @@ loginBtn.addEventListener("click", async () => {
   }
 
   try {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: "https://usakowhity.github.io/pet-app2/pet-register.html"
-      }
+    showMessage("送信中…");
+
+    const res = await fetch(`${API_BASE_URL}/api/auth-login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, userId })
     });
 
-    if (error) {
-      showMessage("Magic Link の送信に失敗しました：" + error.message);
+    const data = await res.json();
+
+    if (!data.ok) {
+      showMessage("ログインに失敗しました：" + data.error);
       return;
     }
 
-    showMessage("Magic Link を送信しました。メールを確認してください。", "success");
+    // userId はすでに localStorage にあるので OK
+    showMessage("ログインリンクを送信しました！", "success");
+
+    setTimeout(() => {
+      window.location.href = "pet-register.html";
+    }, 1000);
 
   } catch (err) {
     showMessage("通信エラー：" + err.message);

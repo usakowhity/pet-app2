@@ -9,7 +9,6 @@ const customKeywordsEl = document.getElementById("customKeywords");
 const saveBtn = document.getElementById("saveBtn");
 const messageEl = document.getElementById("message");
 
-
 /* -------------------------------------------------------
    n1 プレビュー表示
 ------------------------------------------------------- */
@@ -25,36 +24,8 @@ n1El.addEventListener("change", () => {
   reader.readAsDataURL(file);
 });
 
-
 /* -------------------------------------------------------
-   Supabase Storage に n1 をアップロード（v2対応）
-------------------------------------------------------- */
-async function uploadN1ToSupabase(file, userId) {
-  const fileExt = file.name.split(".").pop();
-  const fileName = `n1_${userId}.${fileExt}`;
-  const filePath = `n1/${fileName}`;
-
-  // アップロード
-  const { data, error } = await window.supabase.storage
-    .from("pet-images")
-    .upload(filePath, file, { upsert: true });
-
-  if (error) {
-    console.error("Upload error:", error);
-    throw new Error("画像アップロードに失敗しました");
-  }
-
-  // 公開URL取得（v2）
-  const { data: urlData } = window.supabase.storage
-    .from("pet-images")
-    .getPublicUrl(filePath);
-
-  return urlData.publicUrl;
-}
-
-
-/* -------------------------------------------------------
-   保存処理
+   保存処理（Railway API 版）
 ------------------------------------------------------- */
 saveBtn.addEventListener("click", async () => {
   messageEl.textContent = "";
@@ -82,20 +53,35 @@ saveBtn.addEventListener("click", async () => {
   }
 
   try {
-    messageEl.textContent = "画像をアップロード中…";
+    messageEl.textContent = "保存中…";
 
-    // n1 を Supabase にアップロード
-    const n1Url = await uploadN1ToSupabase(file, userId);
+    // FormData で送信（画像 + テキスト）
+    const formData = new FormData();
+    formData.append("userId", userId);
+    formData.append("species", species);
+    formData.append("customName", customName);
+    formData.append("customKeywords", customKeywords);
+    formData.append("n1", file);
 
-    // localStorage に保存
+    const res = await fetch(`${API_BASE_URL}/api/save-user-mode-asset`, {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      throw new Error(data.error || "保存に失敗しました");
+    }
+
+    // バックエンドが返す n1Url を保存
     localStorage.setItem("species", species);
-    localStorage.setItem("n1Url", n1Url);
+    localStorage.setItem("n1Url", data.n1Url);
     localStorage.setItem("customName", customName);
     localStorage.setItem("customKeywords", customKeywords);
 
     messageEl.textContent = "保存が完了しました！";
 
-    // 1秒後にメイン画面へ
     setTimeout(() => {
       window.location.href = "index.html";
     }, 1000);

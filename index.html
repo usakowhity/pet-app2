@@ -86,7 +86,24 @@
   <!-- 音声 -->
   <audio id="pet-sound"></audio>
 
-  <!-- script.js -->
+  <!-- ▼▼▼ 追加：音声認識ボタン ▼▼▼ -->
+  <div class="mode-section">
+    <button id="mic-btn">🎤 声で反応</button>
+  </div>
+
+  <!-- ▼▼▼ 追加：笑顔検知ボタン ▼▼▼ -->
+  <div class="mode-section">
+    <button id="camera-btn">📷 笑顔で反応</button>
+  </div>
+
+  <!-- ▼▼▼ 追加：笑顔検知用ビデオ ▼▼▼ -->
+  <video id="input-video" style="display:none; width:300px; border-radius:12px;" playsinline></video>
+
+  <!-- API設定 & クライアント -->
+  <script src="api-config.js"></script>
+  <script src="api-client.js"></script>
+
+  <!-- script.js（あなたのロジック） -->
   <script type="module" src="script.js"></script>
 
   <script>
