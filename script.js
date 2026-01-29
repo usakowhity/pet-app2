@@ -1,5 +1,5 @@
 /* -------------------------------------------------------
-   pet-app2 script.js（完全安定版）
+   pet-app2 script.js（Railway版・完全統合版）
    - n1 をホームとして表示
    - 生成中は選択モードのみ回転＆他無効化
    - 生成後は n1 に戻って待機
@@ -7,7 +7,7 @@
    - 動画終了 or 10秒後に n1 に戻る
 ------------------------------------------------------- */
 
-const API_BASE = "https://pet-app2-api.vercel.app";
+const API_BASE = "https://pet-app2-api-production.up.railway.app";
 
 const videoBtn = document.getElementById("videoModeBtn");
 const imageSelect = document.getElementById("imageModeSelect");
@@ -18,7 +18,6 @@ let mediaElement = document.getElementById("mediaElement");
 let selectedMode = null;
 let generatedAsset = null;   // 生成済みの動画/画像
 let isReacting = false;      // インタラクション重複防止
-
 
 /* -------------------------------------------------------
    初期表示：n1 をホームとして表示
@@ -31,7 +30,6 @@ window.addEventListener("DOMContentLoaded", () => {
     resultArea.textContent = "まずはペット登録画面で代表写真（n1）を登録してください。";
   }
 });
-
 
 /* -------------------------------------------------------
    モード選択
@@ -46,7 +44,6 @@ imageSelect.addEventListener("change", () => {
   selectedMode = imageSelect.value;
   resultArea.textContent = selectedMode ? "画像を生成します。" : "モードを選択してください。";
 });
-
 
 /* -------------------------------------------------------
    ボタン状態制御（回転・無効化）
@@ -76,6 +73,21 @@ function resetButtonState() {
   });
 }
 
+/* -------------------------------------------------------
+   生成中アニメーション
+------------------------------------------------------- */
+function showLoadingAnimation() {
+  resultArea.innerHTML = `
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>生成中です… 少しお待ちください。</p>
+    </div>
+  `;
+}
+
+function hideLoadingAnimation() {
+  resultArea.innerHTML = "";
+}
 
 /* -------------------------------------------------------
    生成ボタン
@@ -95,7 +107,7 @@ generateBtn.addEventListener("click", async () => {
     return;
   }
 
-  generatedAsset = null; // 古い生成結果をクリア
+  generatedAsset = null;
   setButtonState(selectedMode);
   showLoadingAnimation();
 
@@ -106,16 +118,13 @@ generateBtn.addEventListener("click", async () => {
       await generateImage(selectedMode, userId, species, n1Url);
     }
 
-    // 生成結果を保存（表示はしない）
     generatedAsset = {
       mode: selectedMode,
       url: mediaElement.src
     };
 
-    // n1 に戻す
     returnToN1();
     resultArea.textContent = "生成が完了しました。撫でる・声・笑顔で再生されます。";
-
   } catch (err) {
     console.error(err);
     resultArea.textContent = "生成中にエラーが発生しました：" + err.message;
@@ -125,26 +134,8 @@ generateBtn.addEventListener("click", async () => {
   }
 });
 
-
 /* -------------------------------------------------------
-   生成中アニメーション
-------------------------------------------------------- */
-function showLoadingAnimation() {
-  resultArea.innerHTML = `
-    <div class="loading">
-      <div class="spinner"></div>
-      <p>生成中です… 少しお待ちください。</p>
-    </div>
-  `;
-}
-
-function hideLoadingAnimation() {
-  resultArea.innerHTML = "";
-}
-
-
-/* -------------------------------------------------------
-   画像生成
+   画像生成（安定版 API を維持）
 ------------------------------------------------------- */
 async function generateImage(mode, userId, species, n1Url) {
   const res = await fetch(`${API_BASE}/api/generate-image`, {
@@ -159,9 +150,8 @@ async function generateImage(mode, userId, species, n1Url) {
   mediaElement.src = data.assetUrl;
 }
 
-
 /* -------------------------------------------------------
-   動画生成
+   動画生成（安定版 API を維持）
 ------------------------------------------------------- */
 async function generateVideo(userId, species, n1Url) {
   const res = await fetch(`${API_BASE}/api/generate-video`, {
@@ -175,7 +165,6 @@ async function generateVideo(userId, species, n1Url) {
 
   mediaElement.src = data.videoUrl;
 }
-
 
 /* -------------------------------------------------------
    生成済みアセットの再生（インタラクションから呼ばれる）
@@ -208,7 +197,6 @@ function triggerGeneratedAsset() {
   }
 }
 
-
 /* -------------------------------------------------------
    n1 に戻る（ホーム画面）
 ------------------------------------------------------- */
@@ -222,7 +210,6 @@ function returnToN1() {
   mediaElement = document.getElementById("mediaElement");
 }
 
-
 /* -------------------------------------------------------
    インタラクション → 反応 → 生成済みアセット再生
 ------------------------------------------------------- */
@@ -234,7 +221,6 @@ function triggerPetReaction() {
   playSpeciesSound();
   triggerGeneratedAsset();
 }
-
 
 /* -------------------------------------------------------
    種族別の音声再生
@@ -266,7 +252,6 @@ function playSpeciesSound() {
   });
 }
 
-
 /* -------------------------------------------------------
    撫でる（タッチ・クリック）
 ------------------------------------------------------- */
@@ -282,7 +267,6 @@ function enableTouchInteraction() {
     triggerPetReaction();
   });
 }
-
 
 /* -------------------------------------------------------
    音声認識（名前・キーワード）
@@ -327,7 +311,6 @@ function enableVoiceInteraction() {
     recog.start();
   };
 }
-
 
 /* -------------------------------------------------------
    笑顔検知（MediaPipe）
@@ -382,7 +365,6 @@ function enableSmileDetection() {
     camera.start();
   };
 }
-
 
 /* -------------------------------------------------------
    インタラクション有効化

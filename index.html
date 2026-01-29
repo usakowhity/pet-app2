@@ -10,79 +10,38 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 
   <style>
-    body {
-      font-family: sans-serif;
-      background: #fafafa;
-      padding-bottom: 40px;
+    body { font-family: sans-serif; background: #fafafa; padding-bottom: 40px; }
+    h2 { text-align: center; margin-top: 20px; }
+
+    #mediaArea { position: relative; width: 300px; margin: 20px auto; }
+    #mediaWrapper { width: 100%; border-radius: 12px; overflow: hidden; }
+    #mediaElement { width: 100%; border-radius: 12px; }
+
+    .mode-section { margin: 20px auto; text-align: center; }
+    #modeButton { display:none; margin-top:20px; padding:10px 20px; }
+
+    #p2Video {
+      display:none;
+      width:100%;
+      max-width:300px;
+      margin:20px auto;
+      border-radius:12px;
     }
 
-    h2 {
-      text-align: center;
-      margin-top: 20px;
+    .still-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
     }
-
-    /* ペット表示領域 */
-    #mediaArea {
-      position: relative;
-      width: 300px;
-      margin: 20px auto;
-    }
-
-    #mediaWrapper {
-      width: 100%;
+    .still-image {
+      max-width: 90%;
+      max-height: 90%;
       border-radius: 12px;
-      overflow: hidden;
-    }
-
-    #mediaElement {
-      width: 100%;
-      border-radius: 12px;
-    }
-
-    /* モード選択UI */
-    .mode-section {
-      margin: 20px auto;
-      text-align: center;
-    }
-
-    .generate-area {
-      text-align: center;
-      margin-top: 20px;
-    }
-
-    #result-area {
-      text-align: center;
-      margin-top: 20px;
-      min-height: 80px;
-    }
-
-    /* -------------------------------------------------------
-       生成中の UI 制御（回転・無効化）
-    ------------------------------------------------------- */
-    .active-rotate {
-      animation: spin 1s linear infinite;
-      opacity: 1;
-    }
-
-    .disabled {
-      opacity: 0.4;
-      pointer-events: none;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* ローディング表示 */
-    .spinner {
-      width: 32px;
-      height: 32px;
-      border: 4px solid #ccc;
-      border-top-color: #4CAF50;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto;
     }
   </style>
 </head>
@@ -91,24 +50,21 @@
 
   <h2>pet-app2</h2>
 
-  <!-- ペット表示領域（n1 がホーム画面） -->
+  <!-- n1画像 -->
   <div id="mediaArea">
     <div id="mediaWrapper">
       <img id="mediaElement" src="">
     </div>
   </div>
 
-  <!-- 動画（p2） -->
-  <div class="mode-section">
-    <h3>動画（おすすめ）</h3>
-    <button id="videoModeBtn" data-mode="p2">喜び動画を生成する</button>
-  </div>
+  <!-- p2動画再生用 -->
+  <video id="p2Video" playsinline></video>
 
-  <!-- 画像（n2〜p9 の中から1つ） -->
+  <!-- モード選択 -->
   <div class="mode-section">
-    <h3>画像（どれか1つ）</h3>
     <select id="imageModeSelect">
       <option value="">選択してください</option>
+      <option value="p2">喜び動画（p2）</option>
       <option value="n2">お座り</option>
       <option value="n3">寝んね</option>
       <option value="p1">遊ぶ</option>
@@ -122,38 +78,21 @@
     </select>
   </div>
 
-  <!-- 生成ボタン -->
-  <div class="generate-area">
-    <button id="generateBtn">生成する</button>
+  <!-- 選択したモードのボタン -->
+  <div class="mode-section">
+    <button id="modeButton"></button>
   </div>
 
-  <!-- 結果表示 -->
-  <div id="result-area">
-    <p>モードを選択してください。</p>
-  </div>
-
-  <!-- インタラクション用（音声・笑顔・撫でる） -->
-  <div id="interaction-controls" style="text-align:center; margin-top:30px;">
-    <button id="mic-btn">🎤 声で反応</button>
-    <button id="camera-btn">📷 笑顔で反応</button>
-  </div>
-
-  <!-- カメラ入力（非表示） -->
-  <video id="input-video" style="display:none;"></video>
-
-  <!-- 種族別の音声 -->
+  <!-- 音声 -->
   <audio id="pet-sound"></audio>
 
-  <!-- script.js（生成ロジック＋インタラクション統合版） -->
+  <!-- script.js -->
   <script type="module" src="script.js"></script>
 
   <script>
-    // ページ読み込み時に n1 を表示
     window.addEventListener("DOMContentLoaded", () => {
       const n1 = localStorage.getItem("n1Url");
-      if (n1) {
-        document.getElementById("mediaElement").src = n1;
-      }
+      if (n1) document.getElementById("mediaElement").src = n1;
     });
   </script>
 
