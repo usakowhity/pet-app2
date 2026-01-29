@@ -1,6 +1,20 @@
+// --- apiClient が読み込まれるまで待つ ---
+function waitForApiClient() {
+  return new Promise((resolve) => {
+    const check = () => {
+      if (window.apiClient) resolve();
+      else setTimeout(check, 50);
+    };
+    check();
+  });
+}
+
+await waitForApiClient();
+
 /* -------------------------------------------------------
    DOM 取得
 ------------------------------------------------------- */
+
 const imageSelect = document.getElementById("imageModeSelect");
 const modeButton = document.getElementById("modeButton");
 const mediaElement = document.getElementById("mediaElement");
