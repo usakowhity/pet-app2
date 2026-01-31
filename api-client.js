@@ -31,3 +31,10 @@ async function apiHealth() {
   const res = await fetch(`${API_BASE_URL}/api/health`);
   return await res.json();
 }
+
+window.apiClient = {
+  apiGenerateImage,
+  apiGenerateVideo,
+  apiSaveUserModeAsset,
+  apiHealth,
+};
