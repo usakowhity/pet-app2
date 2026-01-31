@@ -12,6 +12,7 @@ function initApp() {
   /* -------------------------------------------------------
      DOM 取得
   ------------------------------------------------------- */
+  console.log("initApp started");
   const imageSelect = document.getElementById("imageModeSelect");
   const modeButton = document.getElementById("modeButton");
   const mediaElement = document.getElementById("mediaElement");
