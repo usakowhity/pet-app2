@@ -13,6 +13,7 @@ function initApp() {
      DOM 取得
   ------------------------------------------------------- */
   console.log("initApp started");
+
   const imageSelect = document.getElementById("imageModeSelect");
   const modeButton = document.getElementById("modeButton");
   const mediaElement = document.getElementById("mediaElement");
@@ -67,7 +68,7 @@ function initApp() {
         /* ------------------------------
            喜び動画（p2）
         ------------------------------ */
-        const res = await apiClient.generateVideo({
+        const res = await apiClient.apiGenerateVideo({
           userId,
           species,
           n1Url
@@ -83,7 +84,7 @@ function initApp() {
         /* ------------------------------
            静止画生成
         ------------------------------ */
-        const res = await apiClient.generateImage({
+        const res = await apiClient.apiGenerateImage({
           userId,
           modeId: selectedMode,
           species,
