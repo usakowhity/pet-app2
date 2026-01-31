@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // --- apiClient が読み込まれるまで待つ ---
   const timer = setInterval(() => {
     if (window.apiClient) {
       clearInterval(timer);
@@ -9,9 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initApp() {
-  /* -------------------------------------------------------
-     DOM 取得
-  ------------------------------------------------------- */
   console.log("initApp started");
 
   const imageSelect = document.getElementById("imageModeSelect");
@@ -26,6 +22,16 @@ function initApp() {
 
   let selectedMode = "";
   let isGenerating = false;
+
+  /* -------------------------------------------------------
+     種別ごとの喜び音声を返す関数
+  ------------------------------------------------------- */
+  function getHappySound(species) {
+    if (species === "dog") return "assets/sounds/dog-happy.mp3";
+    if (species === "cat") return "assets/sounds/cat-happy.mp3";
+    if (species === "rabbit") return "assets/sounds/rabbit-happy.mp3";
+    return "";
+  }
 
   /* -------------------------------------------------------
      モード選択
@@ -65,9 +71,6 @@ function initApp() {
 
     try {
       if (selectedMode === "p2") {
-        /* ------------------------------
-           喜び動画（p2）
-        ------------------------------ */
         const res = await apiClient.apiGenerateVideo({
           userId,
           species,
@@ -81,9 +84,6 @@ function initApp() {
         p2Video.play();
 
       } else {
-        /* ------------------------------
-           静止画生成
-        ------------------------------ */
         const res = await apiClient.apiGenerateImage({
           userId,
           modeId: selectedMode,
@@ -124,6 +124,9 @@ function initApp() {
       .map((k) => k.trim())
       .filter((k) => k);
 
+    const species = localStorage.getItem("species");
+    const happySound = getHappySound(species);
+
     if (!("webkitSpeechRecognition" in window)) {
       alert("音声認識がサポートされていません");
       return;
@@ -138,7 +141,7 @@ function initApp() {
       console.log("認識:", text);
 
       if (keywords.some((k) => text.includes(k))) {
-        petSound.src = "assets/sounds/happy.mp3";
+        petSound.src = happySound;
         petSound.play();
       }
     };
@@ -149,6 +152,9 @@ function initApp() {
   ------------------------------------------------------- */
   cameraBtn.addEventListener("click", async () => {
     inputVideo.style.display = "block";
+
+    const species = localStorage.getItem("species");
+    const happySound = getHappySound(species);
 
     const stream = await navigator.mediaDevices.getUserMedia({
       video: true
@@ -182,7 +188,7 @@ function initApp() {
       const mouthHeight = Math.hypot(bottom.x - top.x, bottom.y - top.y);
 
       if (mouthHeight / mouthWidth > 0.35) {
-        petSound.src = "assets/sounds/happy.mp3";
+        petSound.src = happySound;
         petSound.play();
       }
     });
